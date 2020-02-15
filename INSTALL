@@ -1,0 +1,11 @@
+apt install build-essential apache2 
+apt install cpanminus perl-doc
+apt install git 
+
+cpanm Minilla
+cpanm Version::Next
+
+minil new Pepper
+git remote add origin https://github.com/ericschernoff/Pepper.git
+
+
