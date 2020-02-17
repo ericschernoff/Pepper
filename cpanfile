@@ -1,4 +1,4 @@
-requires 'perl', '5.008001';
+requires 'perl', '>= 5.022001';
 
 on 'test' => sub {
     requires 'CGI', '>= 4.46',
@@ -6,6 +6,17 @@ on 'test' => sub {
     requires 'DBD::mysql', '>= 4.050';
     requires 'DBI', '>= 1.643';
     requires 'Try::Tiny', '>= 0.30';
+	requires 'Scalar::Util', '>= 1.50';
     requires 'Test::More', '0.98';
-};
 
+	requires 'Plack', '>= 1.0047';
+	requires 'Server::Starter', '>= 0.33';
+	requires 'Plack::Middleware::DBIx::DisconnectAll', '>= 0.02';
+	requires 'Plack::Middleware::ReverseProxy', '>= 0.15';
+	requires 'Plack::Middleware::Timeout','0.09';
+	requires 'Starlet', '>= 0.31';
+	requires 'Net::Server::SS::PreFork', '>= 0.05';
+	requires 'Starman', '>= 0.4014';
+	requires 'Plack::Handler::Gazelle', '>= 0.48';
+	requires 'File::RotateLogs', '>= 0.08';
+};

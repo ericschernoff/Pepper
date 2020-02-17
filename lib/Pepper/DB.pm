@@ -1,9 +1,6 @@
 package Pepper::DB;
 
-# please see pod documentation included below
-# perldoc Majestica::DB
-
-$Pepper::VERSION = '7.0';
+$Pepper::VERSION = '1.0';
 
 # load needed third-part modules
 use DBI; # tim bounce, where would the world be without you? nowhere.
@@ -329,10 +326,6 @@ sub list_select {
 		$self->log_errors(qq{Missing DB Connection for $sql.});
 	}
 
-	if (not $self->{belt}->{all_hail}) { # set it up
-		$self->{belt} = Majestica::Core::UtilityBelt->new();
-	}
-	
 	# prep & execute the sql
 	$sth = $self->{dbh}->prepare($sql);
 	# use $@values if has placeholders
@@ -360,14 +353,9 @@ sub log_errors {
 	# default message in cause of blank
 	$error_message ||= 'Database error.';
 
-	# do we have utility belt?  if built within pack_luggage(), we will
-	if (not $self->{belt}->{all_hail}) { # set it up
-		$self->{belt} = Majestica::Core::UtilityBelt->new();
-	}
-
 	# log and then send the message
-    $self->{belt}->logger($error_message,'database_errors');
-    $self->{belt}->send_response($error_message,1);
+#    $self->{belt}->logger($error_message,'database_errors');
+ #  $self->{belt}->send_response($error_message,1);
 
 }
 

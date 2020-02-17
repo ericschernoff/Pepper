@@ -1,18 +1,43 @@
 package Pepper::CGIHandler;
 
-# for encoding and decoding JSON
+$Pepper::CGIHandler::VERSION = '1.0';
+
 use Cpanel::JSON::XS;
-use CGI;                             # load CGI routines
+use CGI; 
+
 use strict;
 
 # https://metacpan.org/pod/distribution/CGI/lib/CGI.pod#HTTP-COOKIES
 
 sub new {
-
+	my ($class) = @_;
+	
+	# start the object 
+	my $self = bless {
+		'query' = CGI->new,
+	}, $class;
+	
 }
 
 sub fetch_params {
+	my $self = shift;
+	
+	# save basic parameters to a hashref under $self->{params}	
+	$self->{params} = $self->{query}->Vars;
+	
+	# process the multi parameters
+	foreach $multi_param ( $self->{query}->multi_param ) {
+		
+		@values = $self->{query}->>multi_param($multi_param);
+		
+		# save as arrayref until the 'multi' sub-hash
+		$self->{params}{multi}{$multi_param} = \@values;
 
+		# comma-separated list under the main 'params' list
+		$self->{params}{$multi_param} = join(',', @values);
+		
+	}
+	
 } 
 
 sub get_cookies {
