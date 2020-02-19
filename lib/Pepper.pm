@@ -3,7 +3,7 @@ package Pepper;
 $Pepper::VERSION = '1.0';
 
 use Pepper::DB;
-use Pepper::CGIHandler;
+use Pepper::PlackHandler;
 
 use strict;
 
@@ -21,23 +21,31 @@ use strict;
 
 # constructor instantiates DB and CGI classes
 sub new {
-	my ($class, $skip_db) = @_;
+	my ($class,$args) = @_;
+	# %$args can have:
+	#	'skip_db' => 1 if we don't want a DB handle
+	#	'request' => $plack_request_object, # if coming from pepper.psgi
+	#	'response' => $plack_response_object, # if coming from pepper.psgi
 
 	# start the object 
 	my $self = bless { }, $class;
 	
+	# read in our configuration file - use Path::Tiny;
+	
 	# unless they indicate not to connect to the database, go ahead
 	# and set up the database object / connection
-	unless ($skip_db) {
+	unless ($$args{skip_db}) {
 		$self->{db} = Pepper::DB->new();
 	}
 
-	# if we are in a CGI environment, instantiate CGI handler
+	# if we are in a Plack environment, instantiate PlackHandler
 	# this will gather up the parameters
-	if ($ENV{PATH_INFO}) {
-		$self->{cgi_handler} = Pepper::CGIHandler->new();
+	if ($$args{request}) {
+		$$args{db} = $self->{db}; # pass in the database handler for rollback on errors
+		$self->{plack_handler} = Pepper::PlackHandler->new($args);
 	}
 
+	# ready to go
 	return $self;
 	
 }
@@ -56,12 +64,12 @@ sub AUTOLOAD {
 		return $self->{belt}->$called_method(@_);
 		
 	# cgi handler function?
-	} elsif ($self->{cgi_handler}->can($called_method)) {
-		return $self->{cgi_handler}->$called_method(@_);
+	} elsif ($self->{plack_handler}->can($called_method)) {
+		return $self->{plack_handler}->$called_method(@_);
 	
 	} else { # hard fail with an error message
 		my $message = "ERROR: No '$called_method' method defined for ".$self->{config}{name}.' objects.';
-		$self->{cgi_handler}->send_response( $message, 1 );
+		$self->{plack_handler}->send_response( $message, 1 );
 
 	}
 	
