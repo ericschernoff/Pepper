@@ -14,13 +14,15 @@ use strict;
 
 # create ourself and connect to the database
 sub new {
-	my $class = shift;
+	my ($class,$args) = @_;
+	# $args should have:
+	#	'config' => the system configuration from Pepper::Utilities,
+	#	'utils' => an Pepper::Utilities object,
 
-	# grab args, which will be the connect_to_database and the system config hash from the UtilityBelt
-	my ($connect_to_database, $config) = @_;
+	my $config = $$args{config};
 
 	# if $connect_to_database is empty, go with the main 'information_schema' system database
-	$connect_to_database ||= "information_schema";
+	$$config{connect_to_database} ||= "information_schema";
 
 	# cannot do a thing without the %$config - hard death
 	if (ref($config) ne 'HASH' || !$$config{database_username} || !$$config{database_password}) {
@@ -146,7 +148,7 @@ sub decrypt_string {
 
 	# if no salt is sent, use $self->{config}{salt_phrase}, failing that, default to the truth
 	$salt_phrase ||= $self->{config}{salt_phrase};
-	$salt_phrase ||= 'AllHailGinger'; # please set up a $salt_phrase
+	$salt_phrase ||= 'P3pp3RWasAG00dD0g!'; # please set up a $salt_phrase
 
 	# make sure we are connected to the DB
 	$self->connect_to_database();
@@ -345,8 +347,7 @@ sub list_select {
 	return \@sendBack;
 }
 
-# subroutine to use the utility_belt's logging and return functions to capture errors and return a proper message
-# doing this route because often this class won't have the utility belt because it is called before the belt is set up
+# subroutine to use the Pepper::Utilities's logging and return functions to capture errors and return a proper message
 sub log_errors {
 	my ($self,$error_message) = @_;
 
@@ -354,9 +355,8 @@ sub log_errors {
 	$error_message ||= 'Database error.';
 
 	# log and then send the message
-#    $self->{belt}->logger($error_message,'database_errors');
- #  $self->{belt}->send_response($error_message,1);
-
+	$self->{utils}->logger($error_message,'database_errors');
+	$self->{utils}->send_response($error_message,1);
 }
 
 # quick_select: easily execute sql SELECTs that will return one row; returns live array

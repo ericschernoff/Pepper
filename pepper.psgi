@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # This is the PSGI script which runs Pepper as a Plack application
-# Please see $Pepper/configs/start_majestica.bash on how to start up the app,
+# Please see $Pepper/configs/start_pepper.bash on how to start up the app,
 # including environmental variables.
 # Each worker/thread started by Plack/Gazelle (or other) will run a copy of this script
 
@@ -17,7 +17,7 @@ use File::RotateLogs;	# log rotation
 
 # load up the modules we require
 use Pepper;
-use Pepper::UtilityBelt;
+use Pepper::Utilities;
 
 # Here is the PSGI app itself; Plack needs a code reference, so work it like so:
 my $app = sub {
@@ -32,7 +32,11 @@ my $app = sub {
 			'request' => $request, 
 			'response' => $response,
 		);
-		$pepper->execute_method();
+		
+		# put our logic for find and executing the needed handler into the $pepper object
+		$pepper->execute_handler();
+		# that will retrieve and ship out the content
+		
 	};
 	
 	# catch the 'super' fatals, which is when the code breaks (usually syntax-error) before logging
@@ -40,23 +44,23 @@ my $app = sub {
 		my $error_message = $@;
 
 		# tie our UtilityBelt to the current request
-		my $belt = Pepper::UtilityBelt->new(); # need this for logging
-		$belt->{response} = $response;
-		$belt->{request} = $request;
+		my $utils = Pepper::Utilities->new(); # need this for logging
+		$utils->{response} = $response;
+		$utils->{request} = $request;
 			
 		# send the message to to client
 		if ($@ =~ /Plack::Middleware::Timeout/) { 
 			# we want to log exactly what happened
-			$belt->logger({
+			$utils->logger({
 				'url' => 'https://'.$request->env->{HTTP_HOST}.$request->request_uri(),
 				'params' => $request->parameters,
 			},'timeouts');
 			# omnitool_routines.js will know how to handle this
-			$belt->send_response('Execution failed due to timeout.',3); 
+			$utils->send_response('Execution failed due to timeout.',3); 
 
 		# display via the utility belt
 		} else {
-			$belt->send_response('Fatal Error: '.$error_message,3);
+			$utils->send_response('Fatal Error: '.$error_message,3);
 		}
 	}
 	
@@ -69,8 +73,8 @@ my $app = sub {
 
 # rotate the logs every day
 my $rotatelogs = File::RotateLogs->new(
-	logfile => '/opt/pepper/logs/majestica_access_log.%Y%m%d%H%M',
-	linkname => '/opt/pepper/logs/majestica_access_log',
+	logfile => '/opt/pepper/logs/pepper_access_log.%Y%m%d%H%M',
+	linkname => '/opt/pepper/logs/pepper_access_log',
 	rotationtime => 86400,
 	maxage => 86400,
 );
@@ -91,9 +95,7 @@ builder {
 		# the worker PID, the Remote Client IP, Local Time of Service, HTTP Type, URI, HTTP Ver,
 		# Response Length and client browser; separated by dashes
 		logger => sub { 
-			if ($_[0] !~ /SendJavascript|BadgeNotices/) {
-				$rotatelogs->print(@_) 
-			}
+			$rotatelogs->print(@_) 
 		};
 	$app;
 };
