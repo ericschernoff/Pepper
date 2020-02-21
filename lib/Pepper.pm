@@ -10,11 +10,28 @@ use strict;
 
 =cut
 
-Our problems:
-2. Cook up directory structure for /opt/pepper:  config, log, code
-3. pepper-setup command
-4. pepper-set-endpoint command
-5. pepper start / pepper stop / pepper restart --> second arg: prod, dev, dev-reload
+NEXT STEPS:
+
+- Define list of pre-req packages & install those (incl. Mysql)
+
+- Create 'pepper' script:
+	- setup --> create directory structure, build configs, create examples
+	- set-endpoint --> add/update an endpoint (including a default)
+	- start / stop / restart for Plack service (second arg: prod, dev, dev-reload)
+		- need a bash script for this
+	- provide a systemd service file
+	- provide an Apache config
+
+- Get it to actually install
+
+- See that it actually runs
+
+- Start writing docs
+	- What / Why
+	- Pre-req's & Set Up
+	- Running via SystemD & Apache
+	- Building microservices
+	- Methods
 
 =cut
 
