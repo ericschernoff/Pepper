@@ -18,6 +18,9 @@ use Date::Format;
 use DateTime;
 use Date::Manip::Date;
 
+# support template toolkit templates
+use Template;
+
 # for being a good person
 use strict;
 
@@ -38,141 +41,9 @@ sub new {
 	return $self;	
 }
 
-# loads up $self->{config}; auto-called via new() above
-sub read_system_configuration {
-	my $self = shift;
-	
-	my ($the_file, $obfuscated_json, $config_json);
-	
-	# kick out if that file does not exist yet
-	if (!(-e $self->{config_file})) {
-		$self->send_response('ERROR: Can not find system configuration file.',1);
-	}
+### START METHODS FOR GENERATING RESPONSES AND LOGS
 
-	# try to read it in
-	eval {
-		$obfuscated_json = $self->filer( $self->{config_file} );
-		$config_json = pack "h*", $obfuscated_json;
-		$self->{config} = $self->json_to_perl($config_json);
-	};
-	
-	# error out if there was any failure
-	if ($@ || ref($self->{config}) ne 'HASH') {
-		$self->send_response('ERROR: Could not read in system configuration file: '.$@,1);
-	}
-
-}
-
-sub write_system_configuration {
-	my ($self,$new_config) = @_;
-	
-	# convert config to JSON
-	$config_json = $self->json_from_perl($new_config);
-	# slight obfuscation
-	$obfuscated_json = unpack "h*", $config_json;
-
-	# stash out the file
-	path( $self->{config_file} )->spew_raw( $obfuscated_json );
-
-	# set the permissions
-	chmod 0600,  $self->{config_file} ;	
-}
-
-# method to read/write/append to a file via Path::Tiny
-sub filer {
-	# required arg is the full path to the file
-	# optional second arg is the operation:  read, write, or append.  default to 'read'
-	# optional third arg is the content for write or append operations
-	my ($self, $file_location, $operation, $content) = @_;
-
-	# return if no good file path
-	return if !$file_location;
-
-	# default operation is 'read'
-	$operation = 'read' if !$operation || $operation !~ /read|write|append|basename/;
-
-	# return if write or append and no content
-	return if $operation !~ /read|basename/ && !$content;
-
-	# do the operations
-	if ($operation eq 'read') {
-
-		$content = path($file_location)->slurp_raw;
-		return $content;
-
-	} elsif ($operation eq 'write') {
-
-		path($file_location)->spew_raw( $content );
-
-	} elsif ($operation eq 'append') {
-
-		# make sure the new content ends with a \n
-		$content .= "\n" if $content !~ /\n$/;
-
-		path($file_location)->append_raw( $content );
-
-	} elsif ($operation eq 'basename') {
-
-		return path($file_location)->basename;
-	}
-
-}
-
-
-# subroutine to log messages under the 'log' directory
-sub logger {
-	# takes three args: the message itself (required), the log_type (optional, one word),
-	# and an optional log location/directory
-	my ($self, $log_message, $log_type, $log_directory) = @_;
-
-	# return if no message sent; no point
-	return if !$log_message;
-
-	# default is 'errors' log type
-	$log_type ||= 'errors';
-
-	# no spaces or special chars in that $log_type
-	$log_type =~ s/[^a-z0-9\_]//gi;
-
-	my ($error_id, $todays_date, $current_time, $log_file, $now);
-
-	# how about a nice error ID
-	$error_id = $self->random_string(15);
-
-	# what is today's date and current time
-	$now = time(); # this is the unix epoch / also a quick-find id of the error
-	$todays_date = $self->time_to_date($now,'to_date_db','utc');
-	$current_time = $self->time_to_date($now,'to_datetime_iso','utc');
-		$current_time =~ s/\s//g; # no spaces
-
-	# target log file - did they provide a target log_directory?
-	if ($log_directory && -d $log_directory) { # yes
-		$log_file = $log_directory.'/'.$log_type.'-'.$todays_date.'.log';
-	} else { # nope, take default
-		$log_file = '/opt/pepper/log/'.$log_type.'-'.$todays_date.'.log';
-	}
-
-	# sometimes time() adds a \n
-	$log_message =~ s/\n//;
-
-	# if they sent a hash or array, it's a developer doing testing.  use Dumper() to output it
-	if (ref($log_message) eq 'HASH' || ref($log_message) eq 'ARRAY') {
-		$log_message = Dumper($log_message);
-	}
-
-	# if we have the plack object (created via pack_luggage()), append to the $log_message
-	if ($self->{request}) {
-		$log_message .= ' | https://'.$self->{request}->env->{HTTP_HOST}.$self->{request}->request_uri();
-	}
-
-	# append to our log file via Path::Tiny
-	path($file_location)->append_raw( 'append', 'ID: '.$error_id.' | '.$current_time.': '.$log_message."\n" );
-
-	# return the code/epoch for an innocent-looking display and for fast lookup
-	return $error_id;
-}
-
-# subroutine to deliver html & json out to the client;
+# method to deliver html & json out to the client;
 # this must be in here to be available even if not in plack mode
 sub send_response {
 	my ($self, $content, $stop_here, $content_type, $content_filename) = @_;
@@ -287,7 +158,156 @@ sub send_response {
 	
 }
 
-# two json translating subroutines using the great JSON module
+# subroutine to process a template via template toolkit
+# this is for server-side processing of templates
+sub template_process {
+	my ($self,$args) = @_;
+	# $$args can contain: include_path, template_file, template_vars, send_out, save_file, stop_here
+
+	# declare vars
+	my ($output, $tt, $tt_error);
+
+	# default include path
+	if (!$$args{include_path}) {
+		$args{include_path} = '/opt/pepper/code/templates/';
+	} elsif ($$args{include_path} !~ /\/$/) { # make sure of trailing /
+		$$args{include_path} .= '/';
+	}
+
+	# $$args{tag_style} = 'star', 'template' or similiar
+	# seehttps://metacpan.org/pod/Template#TAG_STYLE
+
+	# default tag_style to regular, [% %]
+	$$args{tag_style} ||= 'template';
+
+	# crank up the template toolkit object, and set it up to save to the $output variable
+	$output = '';
+	$tt = Template->new({
+		ENCODING => 'utf8',
+		INCLUDE_PATH => $$args{include_path},
+		OUTPUT => \$output,
+		TAG_STYLE => $$args{tag_style},
+	}) || $self->send_response("$Template::ERROR",1);
+
+	# process the template
+	$tt->process( $$args{template_file}, $$args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+
+	# make sure to throw error if there is one
+	$tt_error = $tt->error();
+	$self->send_response("Template Error in $$args{template_file}: $tt_error",1) if $tt_error;
+
+	# send it out to the client, save to the filesystem, or return to the caller
+	if ($$args{send_out}) { # output to the client
+
+		# the '2' tells mr_zebra to avoid logging an error
+		$self->send_response($output,2);
+
+	} elsif ($args{save_file}) { # save to the filesystem
+		$self->filer( $$args{save_file}, 'write', $output);
+		return $$args{save_file}; # just kick back the file name
+
+	} else { # just return
+		return $output;
+	}
+}
+
+# method to log messages under the 'log' directory
+sub logger {
+	# takes three args: the message itself (required), the log_type (optional, one word),
+	# and an optional log location/directory
+	my ($self, $log_message, $log_type, $log_directory) = @_;
+
+	# return if no message sent; no point
+	return if !$log_message;
+
+	# default is 'errors' log type
+	$log_type ||= 'errors';
+
+	# no spaces or special chars in that $log_type
+	$log_type =~ s/[^a-z0-9\_]//gi;
+
+	my ($error_id, $todays_date, $current_time, $log_file, $now);
+
+	# how about a nice error ID
+	$error_id = $self->random_string(15);
+
+	# what is today's date and current time
+	$now = time(); # this is the unix epoch / also a quick-find id of the error
+	$todays_date = $self->time_to_date($now,'to_date_db','utc');
+	$current_time = $self->time_to_date($now,'to_datetime_iso','utc');
+		$current_time =~ s/\s//g; # no spaces
+
+	# target log file - did they provide a target log_directory?
+	if ($log_directory && -d $log_directory) { # yes
+		$log_file = $log_directory.'/'.$log_type.'-'.$todays_date.'.log';
+	} else { # nope, take default
+		$log_file = '/opt/pepper/log/'.$log_type.'-'.$todays_date.'.log';
+	}
+
+	# sometimes time() adds a \n
+	$log_message =~ s/\n//;
+
+	# if they sent a hash or array, it's a developer doing testing.  use Dumper() to output it
+	if (ref($log_message) eq 'HASH' || ref($log_message) eq 'ARRAY') {
+		$log_message = Dumper($log_message);
+	}
+
+	# if we have the plack object (created via pack_luggage()), append to the $log_message
+	if ($self->{request}) {
+		$log_message .= ' | https://'.$self->{request}->env->{HTTP_HOST}.$self->{request}->request_uri();
+	}
+
+	# append to our log file via Path::Tiny
+	path($file_location)->append_raw( 'append', 'ID: '.$error_id.' | '.$current_time.': '.$log_message."\n" );
+
+	# return the code/epoch for an innocent-looking display and for fast lookup
+	return $error_id;
+}
+
+### START GENERAL UTILITIES
+
+# method to read/write/append to a file via Path::Tiny
+sub filer {
+	# required arg is the full path to the file
+	# optional second arg is the operation:  read, write, or append.  default to 'read'
+	# optional third arg is the content for write or append operations
+	my ($self, $file_location, $operation, $content) = @_;
+
+	# return if no good file path
+	return if !$file_location;
+
+	# default operation is 'read'
+	$operation = 'read' if !$operation || $operation !~ /read|write|append|basename/;
+
+	# return if write or append and no content
+	return if $operation !~ /read|basename/ && !$content;
+
+	# do the operations
+	if ($operation eq 'read') {
+
+		$content = path($file_location)->slurp_raw;
+		return $content;
+
+	} elsif ($operation eq 'write') {
+
+		path($file_location)->spew_raw( $content );
+
+	} elsif ($operation eq 'append') {
+
+		# make sure the new content ends with a \n
+		$content .= "\n" if $content !~ /\n$/;
+
+		path($file_location)->append_raw( $content );
+
+	} elsif ($operation eq 'basename') {
+
+		return path($file_location)->basename;
+	}
+
+}
+
+
+# two json translating methods using the great JSON module
 # First, make perl data structures into JSON objects
 sub json_from_perl {
 	my ($self, $data_ref) = @_;
@@ -332,7 +352,34 @@ sub random_string {
 	return $string;
 }
 
-# start the timeToDate subroutine, where we convert between UNIX timestamps and human-friendly dates
+
+# method to read a JSON file into a hashref
+sub read_json_file {
+	my ($self, $json_file_path) = @_;
+	
+	# we shall give them an empty hashref if nothing else
+	return {} if !$json_file_path || !(-e $json_file_path);
+	
+	my $json_content = $self->filer($json_file_path);
+
+	return {} if !$json_content;
+	
+	return $self->json_to_perl($json_content);
+	
+}
+
+# method to save JSON into a file
+sub write_json_file {
+	my ($self, $json_file_path, $data_structure) = @_;
+	
+	return if !$json_file_path || ref($data_structure) !~ /ARRAY|HASH/;
+	
+	# writing one liners like this does not make me feel beautiful	
+	$self->filer($json_file_path, 'write', $self->json_from_perl($data_structure) );
+
+}
+
+# start the timeToDate method, where we convert between UNIX timestamps and human-friendly dates
 sub time_to_date {
 	# declare vars & grab args
 	my ($self, $timestamp, $task, $time_zone_name) = @_;
@@ -458,6 +505,109 @@ sub time_to_date {
 	$timestamp =~ s/  / /g; # remove double spaces;
 	$timestamp =~ s/GMT //;
 	return $timestamp;
+}
+
+### START METHODS FOR pepper setup
+
+# loads up $self->{config}; auto-called via new() above
+sub read_system_configuration {
+	my $self = shift;
+	
+	my ($the_file, $obfuscated_json, $config_json);
+	
+	# kick out if that file does not exist yet
+	if (!(-e $self->{config_file})) {
+		$self->send_response('ERROR: Can not find system configuration file.',1);
+	}
+
+	# try to read it in
+	eval {
+		$obfuscated_json = $self->filer( $self->{config_file} );
+		$config_json = pack "h*", $obfuscated_json;
+		$self->{config} = $self->json_to_perl($config_json);
+	};
+	
+	# error out if there was any failure
+	if ($@ || ref($self->{config}) ne 'HASH') {
+		$self->send_response('ERROR: Could not read in system configuration file: '.$@,1);
+	}
+
+}
+
+# save a system config file
+sub write_system_configuration {
+	my ($self,$new_config) = @_;
+	
+	# convert config to JSON
+	$config_json = $self->json_from_perl($new_config);
+	# slight obfuscation
+	$obfuscated_json = unpack "h*", $config_json;
+
+	# stash out the file
+	path( $self->{config_file} )->spew_raw( $obfuscated_json );
+
+	# set the permissions
+	chmod 0600,  $self->{config_file} ;	
+}
+
+# method to update the endpoint mapping configs via 'pepper set-endpoint'
+sub set_endpoint_mapping {
+	my ($self, $endpoint_uri, $endpoint_handler) = @_;
+	
+	if (!$endpoint_uri || !$endpoint_handler) {
+		$self->send_response('Error: Both arguments are required for set_endpoint_mapping()',1);
+	}
+	
+	
+	
+	# did they choose to store in a database table?
+	if ($self->{config}{url_mappings_table}) {
+	
+		# make sure that table exists
+		my ($database_name, $table_name) = split /\./, $self->{config}{url_mappings_table};
+		my ($table_exists) = $self->{db}->quick_select(qq{
+			select count(*) from information_schema.tables 
+			where table_schema=? and table_name=?
+		},[ $database_name, $table_name ]);
+
+		# if the table does not exist, try to make it
+		if (!$table_exists) {
+			
+			# we won't create databases/schema in this library
+			my ($database_exists) = $self->{db}->quick_select(qq{
+				select count(*) from information_schema.schemata 
+				where schema_name=? 
+			},[ $database_name ]);
+			
+			if (!$database_exists) {
+				$self->send_response("Error: Database schema $database_exists does not exist",1);
+			}
+			
+			# safe to create the table
+			$self->{db}->do_sql(qq{
+				create table $self->{config}{url_mappings_table} (
+					endpoint_uri varchar(200) primary key,
+					handler_module varchar(200) not null
+				)
+			});
+			
+		}
+	
+		# finally, create the mapping
+		$self->{db}->do_sql(qq{
+			replace into $self->{config}{url_mappings_table}
+			(endpoint_uri, handler_module) values (?, ?)
+		}, [$endpoint_uri, $endpoint_handler] );
+	
+	# otherwise, save to a JSON file
+	} else {
+		
+		my $url_mappings = $self->read_json_file( $self->{config}{url_mappings_file} );
+		$$url_mappings{$endpoint_uri} = $endpoint_handler;
+		$self->write_json_file( $self->{config}{url_mappings_file}, $url_mappings );
+		
+	}
+	
 }
 
 1;

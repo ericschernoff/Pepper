@@ -11,11 +11,6 @@ use strict;
 =cut
 
 Our problems:
-1. How are we going to store / retrieve the URL mappings?
-	- config->url_mappings_table
-	- config->url_mappings_file
-	- need a reader and writer for both
-	
 2. Cook up directory structure for /opt/pepper:  config, log, code
 3. pepper-setup command
 4. pepper-set-endpoint command
@@ -74,27 +69,67 @@ sub new {
 	
 }
 
+# here is where we import and execute the custom code for this endpoint
 sub execute_handler {
-	my $self = shift;
+	my ($self,$endpoint) = @_;
+	# the endpoint will likely be the plack request URI, but accepting
+	# via an arg allows for script mode
 	
-	# resolve the uri to a module under /opt/pepper/code
+	# resolve the endpoint / uri to a module under /opt/pepper/code
+	my $endpoint_handler_module = $self->determine_endpoint_module($endpoint);
 	
 	# import that module
-	unless (eval "require $the_class_name") { # Error out if this won't import
-		$self->{utils}->send_response("Could not import $the_class_name: ".$@,1);
+	unless (eval "require $endpoint_handler_module") { # Error out if this won't import
+		$self->send_response("Could not import $endpoint_handler_module: ".$@,1);
 	}	
 	
 	# create the object
-	$the_handler = $the_class_name->new($self);
+	my $the_handler = $endpoint_handler_module->new($self);
 	
 	# execute the request handler
-	$response_content = $the_handler->handler();
+	my $response_content = $the_handler->handler();
 	
 	# ship the content
-	$self->{utils}->send_response($response_content);
+	$self->send_response($response_content);
 	
 }
 
+# method to determine the handler for this URI / endpoint from the configuration
+sub determine_endpoint_module {
+	my ($self,$endpoint) = @_;
+	
+	# probably in plack mode
+	my $endpoint ||= $self->{uri};
+
+	# hopefully, they provided a default
+	my $endpoint_handler_module = $self->{config}{default_endpoint_module};
+	
+	# did they choose to store in a database table?
+	if ($self->{config}{url_mappings_table}) {
+		
+		($endpoint_handler_module) = $self->quick_select(qq{
+			select handler_module from $self->{config}{url_mappings_table}
+			where endpoint_uri = ?
+		}, [ $endpoint ] );
+		
+	# or maybe a JSON file
+	} elsif ($self->{config}{url_mappings_file}) {
+	
+		$url_mappings = $self->read_json_file( $self->{config}{url_mappings_file} );
+		
+		$endpoint_handler_module = $$url_mappings{$endpoint};
+		
+	}
+	
+	# if a module was found, send it back
+	if ($endpoint_handler_module) {
+		return $endpoint_handler_module;
+		
+	# otherwise, we have an error
+	} else {
+		$self->send_response('Error: No handler defined for this endpoint.',1);
+	}
+}
 
 # autoload module to support passing calls to our subordinate modules.
 our $AUTOLOAD;

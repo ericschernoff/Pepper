@@ -10,6 +10,8 @@ on 'test' => sub {
 	requires 'Date::Manip::Date', '>= 6.72';
 	requires 'DateTime', '>= 1.50';
 	requires 'Encode', '>= 2.88';
+	
+	requires 'Template', '>= 3.007';
 
 	requires 'Path::Tiny', '>= 0.108';
 	requires 'Scalar::Util', '>= 1.50';
