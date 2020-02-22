@@ -5,6 +5,7 @@ $Pepper::VERSION = '1.0';
 use Pepper::DB;
 use Pepper::PlackHandler;
 use Pepper::Utilities;
+use lib '/opt/pepper/code/';
 
 use strict;
 
@@ -37,15 +38,16 @@ NEXT STEPS:
 
 # constructor instantiates DB and CGI classes
 sub new {
-	my ($class,$args) = @_;
-	# %$args can have:
+	my ($class,%args) = @_;
+	# %args can have:
 	#	'skip_db' => 1 if we don't want a DB handle
+	#	'skip_config' => 1, # only for 'pepper' command in setup mode
 	#	'request' => $plack_request_object, # if coming from pepper.psgi
 	#	'response' => $plack_response_object, # if coming from pepper.psgi
 
 	# start the object 
 	my $self = bless {
-		'utils' => Pepper::Utilities->new( $$args{request}, $$args{response} ),
+		'utils' => Pepper::Utilities->new( \%args ),
 	}, $class;
 	# pass in request, response so that Utilities->send_response() works
 	
@@ -67,10 +69,10 @@ sub new {
 
 	# if we are in a Plack environment, instantiate PlackHandler
 	# this will gather up the parameters
-	if ($$args{request}) {
+	if ($args{request}) {
 		$self->{plack_handler} = Pepper::PlackHandler->new({
-			'request' => $$args{request},
-			'response' => $$args{response},
+			'request' => $args{request},
+			'response' => $args{response},
 			'utils' => $self->{utils},
 		});
 		

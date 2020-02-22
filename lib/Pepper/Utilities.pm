@@ -25,18 +25,18 @@ use Template;
 use strict;
 
 sub new {
-	my ($class, $request, $response) = @_;
+	my ($class, $args) = @_;
 
 	# start the object 
 	my $self = bless {
-		'request' => $request,
-		'response' => $response,
+		'request' => $$args{request},
+		'response' => $$args{response},
 		'json_coder' => Cpanel::JSON::XS->new->utf8->allow_nonref->allow_blessed,
 		'config_file' => '/opt/pepper/config/pepper.cfg',
 	}, $class;
 	
 	# read in the system configuration
-	$self->read_system_configuration();
+	$self->read_system_configuration() if !$$args{skip_config};
 	
 	return $self;	
 }
@@ -161,50 +161,50 @@ sub send_response {
 # subroutine to process a template via template toolkit
 # this is for server-side processing of templates
 sub template_process {
-	my ($self,$args) = @_;
-	# $$args can contain: include_path, template_file, template_vars, send_out, save_file, stop_here
+	my ($self,%args) = @_;
+	# %args can contain: include_path, template_file, template_vars, send_out, save_file, stop_here
 
 	# declare vars
 	my ($output, $tt, $tt_error);
 
 	# default include path
-	if (!$$args{include_path}) {
-		$args{include_path} = '/opt/pepper/code/templates/';
-	} elsif ($$args{include_path} !~ /\/$/) { # make sure of trailing /
-		$$args{include_path} .= '/';
+	if (!$args{include_path}) {
+		$args{include_path} = '/opt/pepper/template/';
+	} elsif ($args{include_path} !~ /\/$/) { # make sure of trailing /
+		$args{include_path} .= '/';
 	}
 
-	# $$args{tag_style} = 'star', 'template' or similiar
+	# $args{tag_style} = 'star', 'template' or similiar
 	# seehttps://metacpan.org/pod/Template#TAG_STYLE
 
 	# default tag_style to regular, [% %]
-	$$args{tag_style} ||= 'template';
+	$args{tag_style} ||= 'template';
 
 	# crank up the template toolkit object, and set it up to save to the $output variable
 	$output = '';
 	$tt = Template->new({
 		ENCODING => 'utf8',
-		INCLUDE_PATH => $$args{include_path},
+		INCLUDE_PATH => $args{include_path},
 		OUTPUT => \$output,
-		TAG_STYLE => $$args{tag_style},
+		TAG_STYLE => $args{tag_style},
 	}) || $self->send_response("$Template::ERROR",1);
 
 	# process the template
-	$tt->process( $$args{template_file}, $$args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+	$tt->process( $args{template_file}, $args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
 
 	# make sure to throw error if there is one
 	$tt_error = $tt->error();
-	$self->send_response("Template Error in $$args{template_file}: $tt_error",1) if $tt_error;
+	$self->send_response("Template Error in $args{template_file}: $tt_error",1) if $tt_error;
 
 	# send it out to the client, save to the filesystem, or return to the caller
-	if ($$args{send_out}) { # output to the client
+	if ($args{send_out}) { # output to the client
 
 		# the '2' tells mr_zebra to avoid logging an error
 		$self->send_response($output,2);
 
 	} elsif ($args{save_file}) { # save to the filesystem
-		$self->filer( $$args{save_file}, 'write', $output);
-		return $$args{save_file}; # just kick back the file name
+		$self->filer( $args{save_file}, 'write', $output);
+		return $args{save_file}; # just kick back the file name
 
 	} else { # just return
 		return $output;
@@ -557,8 +557,6 @@ sub set_endpoint_mapping {
 	if (!$endpoint_uri || !$endpoint_handler) {
 		$self->send_response('Error: Both arguments are required for set_endpoint_mapping()',1);
 	}
-	
-	
 	
 	# did they choose to store in a database table?
 	if ($self->{config}{url_mappings_table}) {

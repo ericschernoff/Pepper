@@ -13,6 +13,8 @@ on 'test' => sub {
 	
 	requires 'Template', '>= 3.007';
 
+	requires 'IO::Prompter, '>= 0.004015';
+	requires 'Net::Domain', '>= 3.05';
 	requires 'Path::Tiny', '>= 0.108';
 	requires 'Scalar::Util', '>= 1.50';
     requires 'Test::More', '0.98';

@@ -1,0 +1,14 @@
+#!perl
+# script command to run the setup/control module for the
+# Pepper quick-start bundle
+
+use strict;
+use warnings;
+
+use Pepper::Commander;
+
+my $pepper_commander = Pepper::Commander->new();
+
+$pepper_commander->run(@ARGV);
+
+exit;
