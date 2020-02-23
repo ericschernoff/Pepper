@@ -23,7 +23,7 @@ sub new {
 	my ($class) = @_;
 
 	# set up the object with all the options data
-	$self = bless {
+	my $self = bless {
 		'pepper' => Pepper->new(
 			'skip_db' => 1,
 			'skip_config' => 1,
@@ -70,6 +70,8 @@ sub run {
 # create directory structure, build configs, create examples
 sub setup_and_configure {
 	my ($self,@args) = @_;
+
+	my ($config_options_map, $config, $subdir_full, $subdir);
 
 	if (!(-d '/opt/pepper')) {
 		mkdir ('/opt/pepper');
@@ -118,6 +120,8 @@ sub setup_and_configure {
 sub set_endpoint {
 	my ($self,@args) = @_;
 	
+	my ($endpoint_data, $endpoint_prompts, $extra_text, $module_file);
+	
 	# we need the configuration for this
 	$self->{pepper}->{utils}->read_system_configuration();
 	
@@ -137,7 +141,7 @@ sub set_endpoint {
 	$module_file = '/opt/pepper/code/'.$module_file.'.pm';
 	if (!(-e $module_file)) { # start the handler
 		$self->{pepper}->{utils}->template_process(
-			'template_file' => '/opt/pepper/template/endpoint_handler.tt'
+			'template_file' => '/opt/pepper/template/endpoint_handler.tt',
 			'template_vars' => $endpoint_data,
 			'save_file' => $module_file
 		);	
@@ -158,13 +162,15 @@ sub set_endpoint {
 sub prompt_user {
 	my ($self,$prompts_map) = @_;
 	
+	my ($prompt_key, $prompt_set, $results);
+	
 	foreach $prompt_set (@$prompts_map) {
 		# password mode?
 		$prompt_key = $$prompt_set[0];
 		
 		if ($$prompt_set[0] =~ /password|salt_phrase/i) {
 			$$results{$prompt_key} = prompt $$prompt_set[1].$$prompt_set[2], -v, -echo=>'*', -must => { 'provide a value' => qr/./};
-		} elsif ($$option_set[0] =~ /required/i) {
+		} elsif ($$prompt_set[0] =~ /required/i) {
 			$$results{$prompt_key} = prompt $$prompt_set[1].$$prompt_set[2], -v, -must => { 'provide a value' => qr/./};
 		} else { 
 			$$results{$prompt_key} = prompt $$prompt_set[1].$$prompt_set[2], -v;
@@ -185,18 +191,13 @@ sub plack_controller {
 	if ($args[0] eq 'start') {
 	
 	
-	} elsif 
+	} elsif ($args[0] eq 'stop') {
 
-	if ($opts{restart}) {
-		restart_server(%opts);
-		exit 0;
+
+	} elsif ($args[0] eq 'restart') {
+
+
 	}
-
-	if ($opts{stop}) {
-		stop_server(%opts);
-		exit 0;
-	}
-
 
 }
 
@@ -209,38 +210,38 @@ sub _handler_template {
 
 # create the object
 sub new {
-	my ($class,$pepper) = @_;
+	my (\$class,\$pepper) = @_;
 
-	$self = bless {
-		'pepper' => $pepper,
-	}, $class;
+	\$self = bless {
+		'pepper' => \$pepper,
+	}, \$class;
 	
-	return $self;
+	return \$self;
 }
 
 # handle the request
 sub handler {
-	my $self = shift;
-	my $pepper = $self->{pepper}; # convenience
+	my \$self = shift;
+	my \$pepper = \$self->{pepper}; # convenience
 
 	### YOUR FANTASTIC CODE GOES HERE
-	# Please see perldoc pepper for methods available in $pepper
+	# Please see perldoc pepper for methods available in \$pepper
 	#
 	# Parameters sent via GET/POST or JSON body are available 
-	# within $pepper->{params}
+	# within \$pepper->{params}
 	#
-	# When you're ready, please use $pepper->send_response($content) to 
-	# return content to the client.  To send out JSON, $content should be
+	# When you're ready, please use \$pepper->send_response(\$content) to 
+	# return content to the client.  To send out JSON, \$content should be
 	# a reference to an array or hash.  HTML or Text is also great, 
 	# and please see the documentation for other options.
 
 	# Just a very basic start
-	my $starter_content = {
-		'current_timestamp' => $pepper->time_to_date( time(), 'to_date_human_full' ),
+	my \$starter_content = {
+		'current_timestamp' => \$pepper->time_to_date( time(), 'to_date_human_full' ),
 		'hello' => 'world',
 	};
 	
-	$pepper->send_response($starter_content);
+	\$pepper->send_response(\$starter_content);
 	
 }
 

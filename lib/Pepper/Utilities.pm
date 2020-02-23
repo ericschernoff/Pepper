@@ -258,7 +258,7 @@ sub logger {
 	}
 
 	# append to our log file via Path::Tiny
-	path($file_location)->append_raw( 'append', 'ID: '.$error_id.' | '.$current_time.': '.$log_message."\n" );
+	path($log_file)->append_raw( 'append', 'ID: '.$error_id.' | '.$current_time.': '.$log_message."\n" );
 
 	# return the code/epoch for an innocent-looking display and for fast lookup
 	return $error_id;
@@ -539,9 +539,9 @@ sub write_system_configuration {
 	my ($self,$new_config) = @_;
 	
 	# convert config to JSON
-	$config_json = $self->json_from_perl($new_config);
+	my $config_json = $self->json_from_perl($new_config);
 	# slight obfuscation
-	$obfuscated_json = unpack "h*", $config_json;
+	my $obfuscated_json = unpack "h*", $config_json;
 
 	# stash out the file
 	path( $self->{config_file} )->spew_raw( $obfuscated_json );

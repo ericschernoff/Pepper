@@ -35,8 +35,8 @@ sub new {
 	# make the object
 	my $self = bless {
 		'config' => $config, 
-		'database_server' => $database_server,
-		'current_database' => $connect_to_database,
+		'database_server' => $$config{database_server},
+		'current_database' => $$config{connect_to_database},
 		'created' => time(),
 	}, $class;
 

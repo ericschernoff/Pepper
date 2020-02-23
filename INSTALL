@@ -1,5 +1,12 @@
-apt install build-essential apache2 
-apt install cpanminus perl-doc
+apt install git build-essential cpanminus perl-doc libmysqlclient-dev 
+mysql-server apache2 
+zlib1g-dev libssl-dev
+
+libapache2-mod-security2 certbot
+
+a2enmod proxy ssl headers proxy_http rewrite
+
+
 apt install git 
 
 cpanm Minilla

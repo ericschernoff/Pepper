@@ -16,10 +16,7 @@ NEXT STEPS:
 - Define list of pre-req packages & install those (incl. Mysql)
 
 - Create 'pepper' script:
-	- setup --> create directory structure, build configs, create examples
-	- set-endpoint --> add/update an endpoint (including a default)
 	- start / stop / restart for Plack service (second arg: prod, dev, dev-reload)
-		- need a bash script for this
 	- provide a systemd service file
 	- provide an Apache config
 
@@ -56,7 +53,7 @@ sub new {
 	
 	# unless they indicate not to connect to the database, go ahead
 	# and set up the database object / connection
-	unless ($$args{skip_db}) {
+	unless ($args{skip_db}) {
 		$self->{db} = Pepper::DB->new({
 			'config' => $self->{config},
 			'utils' => $self->{utils},
@@ -134,7 +131,7 @@ sub determine_endpoint_module {
 	# or maybe a JSON file
 	} elsif ($self->{config}{url_mappings_file}) {
 	
-		$url_mappings = $self->read_json_file( $self->{config}{url_mappings_file} );
+		my $url_mappings = $self->read_json_file( $self->{config}{url_mappings_file} );
 		
 		$endpoint_handler_module = $$url_mappings{$endpoint};
 		
