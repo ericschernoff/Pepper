@@ -118,7 +118,7 @@ Restarts the Plack service and makes your code changes effective.
 sub setup_and_configure {
 	my ($self,@args) = @_;
 
-	my ($config_options_map, $config, $subdir_full, $subdir);
+	my ($config_options_map, $config, $subdir_full, $subdir, $map_set, $key);
 
 	if (!(-d '/opt/pepper')) {
 		mkdir ('/opt/pepper');
@@ -127,6 +127,9 @@ sub setup_and_configure {
 		$subdir_full = '/opt/pepper/'.$subdir;
 		mkdir ($subdir_full) if !(-d $subdir_full);
 	}
+	
+	# sanity
+	my $utils = $self->{pepper}->{utils};
 	
 	$config_options_map = [
 		['system_username','System user to own and run this service (required)',$ENV{USER}],
@@ -139,6 +142,15 @@ sub setup_and_configure {
 		['url_mappings_database', 'Database to store URL/endpoint mappings.  User named above must be able to create a table.  Leave blank to use JSON config file.'],
 		['default_endpoint_module', 'Default endpoint-handler Perl module (required)'],
 	];
+	
+	# does a configuration already exist?
+	if (-e $utils->{config_file}) {
+		$utils->read_system_configuration();
+		foreach $map_set (@$config_options_map) {
+			$key = $$map_set[0];
+			$$map_set[2] = $utils->{config}{$key} if $utils->{config}{$key}; 
+		}
+	}	
 
 	# shared method below	
 	$config = $self->prompt_user($config_options_map);
@@ -154,16 +166,16 @@ sub setup_and_configure {
 	}
 	
 	# now write the file
-	$self->{pepper}->{utils}->write_system_configuration($config);
+	$utils->write_system_configuration($config);
 
 	# create the default handler template
-	my $code = getstore('', '/opt/pepper/template/endpoint_handler.tt');
+	my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/master/templates/endpoint_handler.tt', '/opt/pepper/template/endpoint_handler.tt');
 	if ($code != 200) {
 		die "Error: Could not retrieve template file from GitHub\n";
 	}
 
 	# fetch the PSGI script
-	my $code = getstore('', '/opt/pepper/lib/pepper.psgi');
+	$code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/master/templates/pepper.psgi', '/opt/pepper/lib/pepper.psgi');
 	if ($code != 200) {
 		die "Error: Could not retrieve PSGI script from GitHub\n";
 	}
@@ -267,14 +279,23 @@ sub prompt_user {
 		
 		$the_prompt = $$prompt_set[1];
 		if ($$prompt_set[2]) {
-			$the_prompt .= ' [Default: '.$$prompt_set[2].']';
+			if ($$prompt_set[0] =~ /password|salt_phrase/i) {
+				$the_prompt .= ' [Default: Stored value]';
+			} else {
+				$the_prompt .= ' [Default: '.$$prompt_set[2].']';
+			}
 		}
 		$the_prompt .= ' : ';
 		
-		if ($$prompt_set[0] =~ /password|salt_phrase/i) {
+		if ($$prompt_set[0] =~ /password|salt_phrase/i && !$$prompt_set[2]) {
 			$$results{$prompt_key} = prompt $the_prompt, -echo=>'*', -stdio, -v, -must => { 'provide a value' => qr/\S/};
-		} elsif ($$prompt_set[1] =~ /required/i) {
+
+		} elsif ($$prompt_set[0] =~ /password|salt_phrase/i) {
+			$$results{$prompt_key} = prompt $the_prompt, -echo=>'*', -stdio, -v;
+
+		} elsif ($$prompt_set[1] =~ /required/i && !$$prompt_set[2]) {
 			$$results{$prompt_key} = prompt $the_prompt, -stdio, -v, -must => { 'provide a value' => qr/\S/};
+
 		} else { 
 			$$results{$prompt_key} = prompt $the_prompt, -stdio, -v;
 		}		
@@ -293,20 +314,20 @@ sub plack_controller {
 
 	my $pid_file = '/opt/pepper/log/pepper.pid';
 
-	if ($args[1] eq 'start') {
+	if ($args[0] eq 'start') {
 
 		my $max_workers = $args[2] || 10;
 
 		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=127.0.0.1:5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment pepper.psgi});
 	
-	} elsif ($args[1] eq 'stop') {
+	} elsif ($args[0] eq 'stop') {
 		
-		my $pepper_pid = $self->{utils}->filer($pid_file);
+		my $pepper_pid = $self->{pepper}->{utils}->filer($pid_file);
 		my $done = kill 'TERM', $pepper_pid;
 
-	} elsif ($args[1] eq 'restart') {
+	} elsif ($args[0] eq 'restart') {
 
-		my $pepper_pid = $self->{utils}->filer($pid_file);
+		my $pepper_pid = $self->{pepper}->{utils}->filer($pid_file);
 		my $done = kill 'HUP', $pepper_pid;
 		
 	}
