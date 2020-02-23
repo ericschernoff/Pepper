@@ -596,6 +596,9 @@ sub set_endpoint_mapping {
 			replace into $self->{config}{url_mappings_table}
 			(endpoint_uri, handler_module) values (?, ?)
 		}, [$endpoint_uri, $endpoint_handler] );
+		
+		# save this change
+		$self->{db}->commit();
 	
 	# otherwise, save to a JSON file
 	} else {

@@ -1,22 +1,25 @@
 # NAME
 
-Pepper - It's new $module
+Pepper - Bundle/library to quick start creating microservices in Perl.
 
 # SYNOPSIS
 
     use Pepper;
 
-# DESCRIPTION
-
-Pepper is ...
-
-# LICENSE
-
-Copyright (C) Eric Chernoff.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+    my $pepper = Pepper->new();
 
 # AUTHOR
 
-Eric Chernoff <ericschernoff@gmail.com>
+Eric Chernoff - ericschernoff at	gmail.com 
+
+# POD ERRORS
+
+Hey! **The above document had some coding errors, which are explained below:**
+
+- Around line 12:
+
+    &#x3d;cut found outside a pod block.  Skipping to next block.
+
+- Around line 35:
+
+    &#x3d;cut found outside a pod block.  Skipping to next block.

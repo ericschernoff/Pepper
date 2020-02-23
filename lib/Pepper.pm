@@ -13,23 +13,23 @@ use strict;
 
 NEXT STEPS:
 
-- Define list of pre-req packages & install those (incl. Mysql)
-
 - Create 'pepper' script:
 	- start / stop / restart for Plack service (second arg: prod, dev, dev-reload)
 	- provide a systemd service file
 	- provide an Apache config
-
-- Get it to actually install
 
 - See that it actually runs
 
 - Start writing docs
 	- What / Why
 	- Pre-req's & Set Up
-	- Running via SystemD & Apache
 	- Building microservices
+	- Writing scripts
 	- Methods
+	- Running via SystemD & Apache
+	- Improve 'pepper help'
+
+- Receive file uploads
 
 =cut
 
@@ -104,10 +104,13 @@ sub execute_handler {
 	
 	# execute the request handler
 	my $response_content = $the_handler->handler();
+
+	# always commit to the database 
+	$self->commit();
 	
 	# ship the content
 	$self->send_response($response_content);
-	
+
 }
 
 # method to determine the handler for this URI / endpoint from the configuration
@@ -182,3 +185,19 @@ sub DESTROY {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Pepper - Bundle/library to quick start creating microservices in Perl.
+
+=head1 SYNOPSIS
+
+  use Pepper;
+
+  my $pepper = Pepper->new();
+
+=head1 AUTHOR
+
+Eric Chernoff - ericschernoff at	gmail.com 

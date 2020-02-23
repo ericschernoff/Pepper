@@ -10,6 +10,7 @@ on 'test' => sub {
 	requires 'Encode', '>= 2.88';	
 	requires 'Template', '>= 3.007';
 	requires 'IO::Prompter', '>= 0.004015';
+	requires 'Term::ReadKey', '>= 2.38';
 	requires 'Net::Domain', '>= 3.05';
 	requires 'Path::Tiny', '>= 0.108';
 	requires 'Scalar::Util', '>= 1.50';

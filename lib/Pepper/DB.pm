@@ -38,6 +38,7 @@ sub new {
 		'database_server' => $$config{database_server},
 		'current_database' => $$config{connect_to_database},
 		'created' => time(),
+		'utils' => $$args{utils},
 	}, $class;
 
 	# now connect to the database and get a real DBI object into $self->{dbh}

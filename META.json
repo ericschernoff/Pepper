@@ -1,12 +1,12 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "Bundle/library to quick start creating microservices in Perl.",
    "author" : [
-      "Eric Chernoff <ericschernoff@gmail.com>"
+      "Eric Chernoff - ericschernoff at\tgmail.com "
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.1.9, CPAN::Meta::Converter version 2.150010",
    "license" : [
-      "perl_5"
+      "mit"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -42,17 +42,52 @@
       },
       "runtime" : {
          "requires" : {
-            "perl" : "5.008001"
+            "perl" : "5.022001"
          }
       },
       "test" : {
          "requires" : {
-            "Test::More" : "0.98"
+            "Cpanel::JSON::XS" : "4.08",
+            "DBD::mysql" : "4.050",
+            "DBI" : "1.643",
+            "Date::Format" : "2.24",
+            "Date::Manip::Date" : "6.72",
+            "DateTime" : "1.50",
+            "Encode" : "2.88",
+            "File::RotateLogs" : "0.08",
+            "IO::Prompter" : "0.004015",
+            "Net::Domain" : "3.05",
+            "Path::Tiny" : "0.108",
+            "Plack" : "1.0047",
+            "Plack::Handler::Gazelle" : "0.48",
+            "Plack::Middleware::DBIx::DisconnectAll" : "0.02",
+            "Plack::Middleware::ReverseProxy" : "0.15",
+            "Plack::Middleware::Timeout" : "0.09",
+            "Scalar::Util" : "1.50",
+            "Server::Starter" : "0.33",
+            "Template" : "3.007",
+            "Term::ReadKey" : "2.38",
+            "Test::More" : "0.98",
+            "Try::Tiny" : "0.30"
          }
       }
    },
    "release_status" : "unstable",
-   "version" : "0.01",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/ericschernoff/Pepper/issues"
+      },
+      "homepage" : "https://github.com/ericschernoff/Pepper",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/ericschernoff/Pepper.git",
+         "web" : "https://github.com/ericschernoff/Pepper"
+      }
+   },
+   "version" : "1.0",
+   "x_contributors" : [
+      "Eric Chernoff <ericschernoff@gmail.com>"
+   ],
    "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
 }
