@@ -11,7 +11,7 @@ use Plack::Response;	# handles the outgoing respose
 use Plack::Builder;		# enable use of middleware
 use Plack::Middleware::DBIx::DisconnectAll;		# protect DB connections
 use Plack::Middleware::Timeout;
-use File::Rotatelogs;	# log rotation
+use File::RotateLogs;	# log rotation
 # probably more middleware to come
 
 # load up the modules we require
@@ -71,7 +71,7 @@ my $app = sub {
 };
 
 # rotate the log every day
-my $rotatelog = File::Rotatelogs->new(
+my $rotatelog = File::RotateLogs->new(
 	logfile => '/opt/pepper/log/pepper_access_log.%Y%m%d%H%M',
 	linkname => '/opt/pepper/log/pepper_access_log',
 	rotationtime => 86400,

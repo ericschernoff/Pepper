@@ -35,8 +35,9 @@ sub handler {
 		'hello' => 'world',
 	};
 	
-	$pepper->send_response($starter_content);
-	
+	# simply return the content; Pepper.pm will send it to the client
+	return $starter_content;
+
 }
 
 1;

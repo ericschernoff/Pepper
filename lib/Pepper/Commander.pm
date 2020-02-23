@@ -318,17 +318,15 @@ sub plack_controller {
 
 		my $max_workers = $args[2] || 10;
 
-		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=127.0.0.1:5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment pepper.psgi});
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment pepper.psgi});
 	
 	} elsif ($args[0] eq 'stop') {
 		
-		my $pepper_pid = $self->{pepper}->{utils}->filer($pid_file);
-		my $done = kill 'TERM', $pepper_pid;
+		system(qq{kill -TERM `cat $pid_file`});
 
 	} elsif ($args[0] eq 'restart') {
 
-		my $pepper_pid = $self->{pepper}->{utils}->filer($pid_file);
-		my $done = kill 'HUP', $pepper_pid;
+		system(qq{kill -HUP `cat $pid_file`});
 		
 	}
 

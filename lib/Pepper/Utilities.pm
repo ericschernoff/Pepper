@@ -52,7 +52,7 @@ sub send_response {
 
 	# $content needs to be one of a text/html string, an ARRAYREF or a HASHREF
 	my $ref_type = ref($content);
-
+	
 	my ($access_message, $error_id, $access_error, $die_text, $display_error_message, $html_generator, $error_html);
 	
 	if ($stop_here == 1 || $stop_here == 3) { # if $stop_here is a 1 or 3, we are stopping due to an error condition
@@ -258,7 +258,7 @@ sub logger {
 	}
 
 	# append to our log file via Path::Tiny
-	path($log_file)->append_raw( 'append', 'ID: '.$error_id.' | '.$current_time.': '.$log_message."\n" );
+	path($log_file)->append_raw( 'ID: '.$error_id.' | '.$current_time.': '.$log_message."\n" );
 
 	# return the code/epoch for an innocent-looking display and for fast lookup
 	return $error_id;

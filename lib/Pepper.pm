@@ -14,9 +14,9 @@ use strict;
 NEXT STEPS:
 
 - Create 'pepper' script:
-	x need a /opt/pepper/lib with pepper.psgi
-	x start / stop / restart for Plack service (second arg: prod, dev, dev-reload)
-	- Allow use of previous config values when re-running setup
+	- stop and restart do not work
+	- default handler not working
+
 	- provide a systemd service file
 	- provide an Apache config
 
@@ -120,11 +120,9 @@ sub determine_endpoint_module {
 	my ($self,$endpoint) = @_;
 	
 	# probably in plack mode
+	my $endpoint_handler_module = '';
 	my $endpoint ||= $self->{uri};
 
-	# hopefully, they provided a default
-	my $endpoint_handler_module = $self->{config}{default_endpoint_module};
-	
 	# did they choose to store in a database table?
 	if ($self->{config}{url_mappings_table}) {
 		
@@ -141,6 +139,9 @@ sub determine_endpoint_module {
 		$endpoint_handler_module = $$url_mappings{$endpoint};
 		
 	}
+
+	# hopefully, they provided a default
+	$endpoint_handler_module ||= $self->{config}{default_endpoint_module};
 	
 	# if a module was found, send it back
 	if ($endpoint_handler_module) {
