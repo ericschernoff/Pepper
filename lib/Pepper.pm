@@ -14,7 +14,8 @@ use strict;
 NEXT STEPS:
 
 - Create 'pepper' script:
-	- start / stop / restart for Plack service (second arg: prod, dev, dev-reload)
+	- need a /opt/pepper/lib with pepper.psgi
+	x start / stop / restart for Plack service (second arg: prod, dev, dev-reload)
 	- provide a systemd service file
 	- provide an Apache config
 

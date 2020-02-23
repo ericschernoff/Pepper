@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 # This is the PSGI script which runs Pepper as a Plack application
-# Please see $Pepper/configs/start_pepper.bash on how to start up the app,
-# including environmental variables.
+# Run via 'pepper start'
 # Each worker/thread started by Plack/Gazelle (or other) will run a copy of this script
 
 # Please see the Perldoc notes below for more info about what this is.
@@ -12,7 +11,7 @@ use Plack::Response;	# handles the outgoing respose
 use Plack::Builder;		# enable use of middleware
 use Plack::Middleware::DBIx::DisconnectAll;		# protect DB connections
 use Plack::Middleware::Timeout;
-use File::RotateLogs;	# log rotation
+use File::Rotatelog;	# log rotation
 # probably more middleware to come
 
 # load up the modules we require
@@ -71,10 +70,10 @@ my $app = sub {
 	$response->finalize;
 };
 
-# rotate the logs every day
-my $rotatelogs = File::RotateLogs->new(
-	logfile => '/opt/pepper/logs/pepper_access_log.%Y%m%d%H%M',
-	linkname => '/opt/pepper/logs/pepper_access_log',
+# rotate the log every day
+my $rotatelog = File::Rotatelog->new(
+	logfile => '/opt/pepper/log/pepper_access_log.%Y%m%d%H%M',
+	linkname => '/opt/pepper/log/pepper_access_log',
 	rotationtime => 86400,
 	maxage => 86400,
 );
@@ -95,7 +94,7 @@ builder {
 		# the worker PID, the Remote Client IP, Local Time of Service, HTTP Type, URI, HTTP Ver,
 		# Response Length and client browser; separated by dashes
 		logger => sub { 
-			$rotatelogs->print(@_) 
+			$rotatelog->print(@_) 
 		};
 	$app;
 };

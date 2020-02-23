@@ -12,8 +12,8 @@ use IO::Prompter;
 # for getting default hostname/domain name
 use Net::Domain qw( hostfqdn domainname );
 
-# for controlling plack
-use Server::Starter qw(start_server restart_server stop_server);
+# for retrieving important templates from the project's github
+use LWP::Simple;
 
 # for doing everything else
 use Pepper;
@@ -123,7 +123,7 @@ sub setup_and_configure {
 	if (!(-d '/opt/pepper')) {
 		mkdir ('/opt/pepper');
 	}
-	foreach $subdir ('config','log','code','template') {
+	foreach $subdir ('code','config','lib','log','template') {
 		$subdir_full = '/opt/pepper/'.$subdir;
 		mkdir ($subdir_full) if !(-d $subdir_full);
 	}
@@ -157,7 +157,16 @@ sub setup_and_configure {
 	$self->{pepper}->{utils}->write_system_configuration($config);
 
 	# create the default handler template
-	$self->{pepper}->{utils}->filer('/opt/pepper/template/endpoint_handler.tt', 'write', $self->_handler_template());
+	my $code = getstore('', '/opt/pepper/template/endpoint_handler.tt');
+	if ($code != 200) {
+		die "Error: Could not retrieve template file from GitHub\n";
+	}
+
+	# fetch the PSGI script
+	my $code = getstore('', '/opt/pepper/lib/pepper.psgi');
+	if ($code != 200) {
+		die "Error: Could not retrieve PSGI script from GitHub\n";
+	}
 
 	# set the default endpoint
 	$self->set_endpoint('default','default',$$config{default_endpoint_module});
@@ -282,66 +291,26 @@ sub prompt_user {
 sub plack_controller {
 	my ($self,@args) = @_;
 
-	if ($args[0] eq 'start') {
+	my $pid_file = '/opt/pepper/log/pepper.pid';
+
+	if ($args[1] eq 'start') {
+
+		my $max_workers = $args[2] || 10;
+
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=127.0.0.1:5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment pepper.psgi});
 	
-	
-	} elsif ($args[0] eq 'stop') {
+	} elsif ($args[1] eq 'stop') {
+		
+		my $pepper_pid = $self->{utils}->filer($pid_file);
+		my $done = kill 'TERM', $pepper_pid;
 
+	} elsif ($args[1] eq 'restart') {
 
-	} elsif ($args[0] eq 'restart') {
-
-
+		my $pepper_pid = $self->{utils}->filer($pid_file);
+		my $done = kill 'HUP', $pepper_pid;
+		
 	}
 
-}
-
-# text for the endpoint handler templates
-sub _handler_template {
-	my $self = shift;
-	return qq{package [%endpoint_handler%];
-
-# provides handler for Endpoint URI: [%endpoint_uri%]
-
-# create the object
-sub new {
-	my (\$class,\$pepper) = @_;
-
-	\$self = bless {
-		'pepper' => \$pepper,
-	}, \$class;
-	
-	return \$self;
-}
-
-# handle the request
-sub handler {
-	my \$self = shift;
-	my \$pepper = \$self->{pepper}; # convenience
-
-	### YOUR FANTASTIC CODE GOES HERE
-	# Please see perldoc pepper for methods available in \$pepper
-	#
-	# Parameters sent via GET/POST or JSON body are available 
-	# within \$pepper->{params}
-	#
-	# When you're ready, please use \$pepper->send_response(\$content) to 
-	# return content to the client.  To send out JSON, \$content should be
-	# a reference to an array or hash.  HTML or Text is also great, 
-	# and please see the documentation for other options.
-
-	# Just a very basic start
-	my \$starter_content = {
-		'current_timestamp' => \$pepper->time_to_date( time(), 'to_date_human_full' ),
-		'hello' => 'world',
-	};
-	
-	\$pepper->send_response(\$starter_content);
-	
-}
-
-1;
-	
-};
 }
 
 1;
