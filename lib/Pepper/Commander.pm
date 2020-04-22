@@ -42,6 +42,7 @@ sub run {
 		'setup' => 'setup_and_configure',
 		'config' => 'setup_and_configure',
 		'set-endpoint' => 'set_endpoint',
+		'list-endpoints' => 'list_endpoints',
 		'start' => 'plack_controller',
 		'stop' => 'plack_controller',
 		'restart' => 'plack_controller',
@@ -50,7 +51,7 @@ sub run {
 	# have to be one of these
 	if (!$args[0] || !$$dispatch{$args[0]}) {
 
-		die "Usage: sudo pepper help|setup|set-endpoint|start|stop|restart\n";
+		die "Usage: sudo pepper help|setup|set-endpoint|list-endpoints|start|stop|restart\n";
 		
 	# can not do anything without a config file
 	} elsif ($args[0] ne 'setup' && !(-e $self->{pepper}->{utils}->{config_file})) {
@@ -95,6 +96,10 @@ handing GET/POST requests to the URI.  If these two arguments are not given, you
 will be prompted for the information.  
 
 If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
+
+# pepper list-endpoints
+
+This will output your configured endpoint mappings.
 
 # pepper start [#Workers] [dev-reload]
 
@@ -267,6 +272,57 @@ sub set_endpoint {
 	# all done
 	print "\nEndpoint configured for $$endpoint_data{endpoint_uri}\n".$extra_text;
 	
+}
+
+# method to list all of the existing endpoints
+sub list_endpoints {
+	my ($self) = @_;
+
+	my $utils = $self->{pepper}->{utils}; # sanity
+	
+	# we need the configuration for this
+	$utils->read_system_configuration();
+	
+	my $url_mappings = {};
+
+	# create a DB object if saving to a table
+	if ($utils->{config}{url_mappings_table}) {
+		$utils->{db} = Pepper::DB->new({
+			'config' => $utils->{config},
+			'utils' => $utils,
+		});
+		
+		my $url_mappings_array = $utils->{db}->do_sql(qq{
+			select endpoint_uri,handler_module from $utils->{config}{url_mappings_table} 
+		});
+		foreach my $map (@$url_mappings_array) {
+			$$url_mappings{$$map[0]} = $$map[1];
+		}
+		
+	# or maybe a JSON file
+	} elsif ($utils->{config}{url_mappings_file}) {
+	
+		$url_mappings = $utils->read_json_file( $utils->{config}{url_mappings_file} );
+		
+	}	
+
+	# get a sorted list of URLs	
+	my @urls = sort keys %$url_mappings;
+
+	# no urls? 
+	if (!$urls[0]) {
+		print "\nNo endpoints are configured.  Please use 'pepper set-endpoint'.\n\n";
+		return;
+	}
+	
+	# otherwise, print them out
+	print "\nCurrent URL-to-code mappings:\n";
+	foreach my $url (@urls) {
+		print "\n$url --> $$url_mappings{$url}\n";
+	}
+	print "\n";
+
+	return;
 }
 
 # method to intercept prompts

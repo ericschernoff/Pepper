@@ -20,6 +20,6 @@ Hey! **The above document had some coding errors, which are explained below:**
 
     &#x3d;cut found outside a pod block.  Skipping to next block.
 
-- Around line 31:
+- Around line 30:
 
     &#x3d;cut found outside a pod block.  Skipping to next block.

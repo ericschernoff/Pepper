@@ -13,11 +13,8 @@ use strict;
 
 NEXT STEPS:
 
-- Way to list the endpoints
-
-- Create 'pepper' script:
-	- provide a systemd service file
-	- provide an Apache config
+- provide a systemd service file
+- provide an Apache config
 
 - Start writing docs
 	- What / Why
