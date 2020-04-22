@@ -4,7 +4,7 @@ package [%endpoint_handler%];
 
 # create the object
 sub new {
-	my ($class,$pepper) = @_;
+	my ($class,$pepper) = \@_;
 
 	$self = bless {
 		'pepper' => $pepper,

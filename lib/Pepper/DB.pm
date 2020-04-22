@@ -26,7 +26,7 @@ sub new {
 
 	# cannot do a thing without the %$config - hard death
 	if (ref($config) ne 'HASH' || !$$config{database_username} || !$$config{database_password}) {
-		die "Cannot create DB object and continue without valid %$config hash.\n";
+		die "Cannot create DB object and continue without valid config hash.\n";
 	}
 	
 	# default DB server is localhost

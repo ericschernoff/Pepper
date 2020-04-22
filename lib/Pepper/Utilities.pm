@@ -94,7 +94,9 @@ sub send_response {
 			} elsif ($self->{request}) {
 				
 				$self->send_response($content);
-				$self->{db}->do_sql('rollback'); # end our transaction
+				if ($self->{db}) { # if we connected to the DB, end our transaction
+					$self->{db}->do_sql('rollback');
+				}
 
 				# do not continue if in the inner eval{} loop
 				if ($stop_here == 1) {

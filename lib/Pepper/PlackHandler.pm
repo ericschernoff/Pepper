@@ -29,7 +29,7 @@ sub pack_psgi_variables {
 	# eject from this if we do not have the plack request and response objects
 	return if !$self->{request} || !$self->{response};
 
-	my (@vars, $value, @values, $v, $request_body_type, $request_body_content, $json_params, $plack_headers);
+	my (@vars, $value, @values, $v, $request_body_type, $request_body_content, $json_params, $plack_headers, @plack_uploads, $plack_upload, $uploaded_filename);
 
 	# stash the hostname, URI, and complete URL
 	$self->{hostname} = lc($self->{request}->env->{HTTP_HOST});
@@ -80,6 +80,13 @@ sub pack_psgi_variables {
 			$self->{params}{$v} = $values[0];
 		}
 	}
+	
+	# did they upload any files? get the Plack::Request::Upload objects
+	@plack_uploads = $self->{request}->uploads->get_all();
+	foreach $plack_upload (@plack_uploads) {
+		$uploaded_filename = $plack_upload->filename;
+		$self->{uploaded_files}{$uploaded_filename} = $plack_upload->path;
+	}	
 	
 	# maybe they sent the auth_token as a PSGI param?
 	$self->{auth_token} ||= $self->{params}{auth_token};

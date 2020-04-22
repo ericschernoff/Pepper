@@ -13,11 +13,11 @@ use strict;
 
 NEXT STEPS:
 
+- Way to list the endpoints
+
 - Create 'pepper' script:
 	- provide a systemd service file
 	- provide an Apache config
-
-- Write a decent handler for testing
 
 - Start writing docs
 	- What / Why
@@ -27,8 +27,6 @@ NEXT STEPS:
 	- Methods
 	- Running via SystemD & Apache
 	- Improve 'pepper help'
-
-- Receive file uploads
 
 =cut
 
@@ -52,7 +50,7 @@ sub new {
 	
 	# unless they indicate not to connect to the database, go ahead
 	# and set up the database object / connection
-	unless ($args{skip_db}) {
+	if (!$args{skip_db} && $self->{config}{use_database} eq 'Y') {
 		$self->{db} = Pepper::DB->new({
 			'config' => $self->{config},
 			'utils' => $self->{utils},
@@ -105,7 +103,9 @@ sub execute_handler {
 	my $response_content = $the_handler->handler();
 
 	# always commit to the database 
-	$self->commit();
+	if ($self->{config}{use_database} eq 'Y') {
+		$self->commit();
+	}
 	
 	# ship the content
 	$self->send_response($response_content);
@@ -163,7 +163,7 @@ sub AUTOLOAD {
 		return $self->{utils}->$called_method(@_);
 
 	# database function?
-	} elsif ($self->{db}->can($called_method)) {
+	} elsif ($self->{config}{use_database} eq 'Y' && $self->{db}->can($called_method)) {
 		return $self->{db}->$called_method(@_);
 
 		

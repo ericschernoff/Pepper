@@ -40,6 +40,7 @@ sub run {
 	my $dispatch = {
 		'help' => 'help_screen',
 		'setup' => 'setup_and_configure',
+		'config' => 'setup_and_configure',
 		'set-endpoint' => 'set_endpoint',
 		'start' => 'plack_controller',
 		'stop' => 'plack_controller',
@@ -134,6 +135,7 @@ sub setup_and_configure {
 	$config_options_map = [
 		['system_username','System user to own and run this service (required)',$ENV{USER}],
 		['development_server','Is this a development server? (Y or N)','Y'],
+		['use_database','Connect to a database server? (Y or N)','Y'],
 		['database_server', 'Hostname or IP Address for your MySQL/MariaDB server (required)'],
 		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
@@ -273,10 +275,19 @@ sub prompt_user {
 	
 	my ($prompt_key, $prompt_set, $results, $the_prompt);
 	
+	$$results{use_database} = 'Y'; # default for below
+	
 	foreach $prompt_set (@$prompts_map) {
-		# password mode?
 		$prompt_key = $$prompt_set[0];
-		
+
+		# if they want to skip database configuration, we will clear/skip the database values
+		if ($prompt_key =~ /database|salt_phrase/ && $$results{use_database} eq 'N') {
+			$$results{$prompt_key} = '';
+			next;
+		}
+	
+		# password mode?
+	
 		$the_prompt = $$prompt_set[1];
 		if ($$prompt_set[2]) {
 			if ($$prompt_set[0] =~ /password|salt_phrase/i) {
@@ -315,7 +326,7 @@ sub plack_controller {
 	my $pid_file = '/opt/pepper/log/pepper.pid';
 	
 	my $dev_reload = '';
-		$dev_reload = '-R /opt/pepper/code' if $args[2];	
+		$dev_reload = '-R /opt/pepper/code' if $args[2];
 		
 	if ($args[0] eq 'start') {
 
