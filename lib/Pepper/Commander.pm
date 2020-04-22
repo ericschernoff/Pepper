@@ -175,16 +175,27 @@ sub setup_and_configure {
 	# now write the file
 	$utils->write_system_configuration($config);
 
-	# create the default handler template
-	my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/master/templates/endpoint_handler.tt', '/opt/pepper/template/endpoint_handler.tt');
-	if ($code != 200) {
-		die "Error: Could not retrieve template file from GitHub\n";
-	}
+	# download some needed templates
+	my $template_files = {
+		'endpoint_handler.tt' => 'endpoint handler template file',
+		'pepper.psgi' => 'PSGI script',
+		'pepper_apache.conf' => 'sample Apache config file',
+		'pepper.service' => 'sample SystemD service file',
+	};
 
-	# fetch the PSGI script
-	$code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/master/templates/pepper.psgi', '/opt/pepper/lib/pepper.psgi');
-	if ($code != 200) {
-		die "Error: Could not retrieve PSGI script from GitHub\n";
+	foreach my $t_file (keys %$template_files) {
+		my $dest_file = '/opt/pepper/template/'.$t_file;
+		my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/master/templates/'.$t_file, $dest_file);
+		if ($code != 200) {
+			die "Error: Could not retrieve $$template_files{$t_file} from GitHub\n";
+		}
+		
+		# set the username for the SystemD service
+		if ($t_file eq 'pepper.service') {
+			my $contents = $utils->filer($dest_file);
+			$contents =~ s/User=root/User=$$config{system_username}/;
+			$contents = $utils->filer($dest_file,'write',$contents);
+		}
 	}
 
 	# set the default endpoint
