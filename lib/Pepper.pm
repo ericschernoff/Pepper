@@ -14,13 +14,10 @@ use strict;
 NEXT STEPS:
 
 - Create 'pepper' script:
-	- stop and restart do not work
-	- default handler not working
-
 	- provide a systemd service file
 	- provide an Apache config
 
-- See that it actually runs
+- Write a decent handler for testing
 
 - Start writing docs
 	- What / Why

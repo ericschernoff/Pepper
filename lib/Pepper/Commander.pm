@@ -102,13 +102,13 @@ maximum number of Plack processes to run.  The default is 10.
 
 If you indicate a number of workers plus 'dev-reload' as the third argument, Plack 
 will be started with the auto-reload option to auto-detect changes to your code.
-If that is not provided, you will need to issue 'pepper restart' to make code changes
-effective.  This option slows down Plack significantly, so it is only appropriate for
-development environments.
+If that is not provided, you will need to issue 'pepper restart' to put your code 
+changes into effect.  Enabling dev-reload will slow down Plack significantly, so it 
+is only appropriate for development environments.
 
 # pepper restart
 
-Restarts the Plack service and makes your code changes effective.
+Restarts the Plack service and put your code changes into effect.
 
 };
 
@@ -139,7 +139,7 @@ sub setup_and_configure {
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
 		['salt_phrase', 'Salt phrase for encryption routines (required)'],
-		['url_mappings_database', 'Database to store URL/endpoint mappings.  User named above must be able to create a table.  Leave blank to use JSON config file.'],
+		['url_mappings_database', 'Database to store URL/endpoint mappings.  User named above must be able to create a table.  Leave blank to use a JSON config file.'],
 		['default_endpoint_module', 'Default endpoint-handler Perl module (required)'],
 	];
 	
@@ -313,12 +313,15 @@ sub plack_controller {
 	my ($self,@args) = @_;
 
 	my $pid_file = '/opt/pepper/log/pepper.pid';
-
+	
+	my $dev_reload = '';
+		$dev_reload = '-R /opt/pepper/code' if $args[2];	
+		
 	if ($args[0] eq 'start') {
 
-		my $max_workers = $args[2] || 10;
+		my $max_workers = $args[1] || 10;
 
-		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment pepper.psgi});
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
 	
 	} elsif ($args[0] eq 'stop') {
 		

@@ -87,7 +87,8 @@
    },
    "version" : "1.0",
    "x_contributors" : [
-      "Eric Chernoff <ericschernoff@gmail.com>"
+      "Eric Chernoff <ericschernoff@gmail.com>",
+      "root <root@pepper.weaverstreet.net>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
