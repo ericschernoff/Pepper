@@ -1,0 +1,23 @@
+[Unit]
+Description=Pepper/Plack Application Server
+After=network.target
+After=syslog.target
+
+[Service]
+
+# the number at the end of ExecStart determines the number of workers
+ExecStart=/usr/local/bin/pepper start 30
+ExecReload=pepper restart
+ExecStop=pepper stop
+Restart=on-failure
+PIDFile=/opt/pepper/log/pepper.pid
+KillSignal=SIGTERM
+PrivateTmp=true
+Type=forking
+
+# IMPORTANT: set this username to something other than root!
+User=root
+
+[Install]
+WantedBy=multi-user.target
+

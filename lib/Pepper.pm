@@ -13,8 +13,8 @@ use strict;
 
 NEXT STEPS:
 
-- provide a systemd service file
-- provide an Apache config
+x provide a systemd service file
+x provide an Apache config
 
 - Start writing docs
 	- What / Why
