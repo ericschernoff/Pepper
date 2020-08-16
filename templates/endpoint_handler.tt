@@ -1,16 +1,13 @@
 package [%endpoint_handler%];
 # provides handler for Endpoint URI: [%endpoint_uri%]
 
-use Exporter;
-our @EXPORT_OK = qw( endpoint_handler );
-
 # promote better coding
 use strict;
 use warnings;
 
 # handle the request
 sub endpoint_handler {
-	my ($pepper) = @_;
+	my ($class,$pepper) = @_;
 
 	### YOUR FANTASTIC CODE GOES HERE
 	# Please see perldoc pepper for methods available in $pepper

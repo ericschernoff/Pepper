@@ -94,10 +94,10 @@ sub execute_handler {
 	# import that module
 	unless (eval "require $endpoint_handler_module") { # Error out if this won't import
 		$self->send_response("Could not import $endpoint_handler_module: ".$@,1);
-	}	
+	}
 	
 	# execute the request endpoint handler; this is not OO for the sake of simplicity
-	my $response_content = endpoint_handler( $self );
+	my $response_content = $endpoint_handler_module->endpoint_handler( $self );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {

@@ -184,11 +184,8 @@ sub setup_and_configure {
 	};
 
 	foreach my $t_file (keys %$template_files) {
-		if ($t_file eq 'pepper.psgi') {
-			my $dest_dir = 'lib';
-		} else {
-			my $dest_dir = 'template';
-		}
+		my $dest_dir = 'template';
+			$dest_dir = 'lib' if $t_file eq 'pepper.psgi';
 		my $dest_file = '/opt/pepper/'.$dest_dir.'/'.$t_file;
 		
 		# grab it from github
