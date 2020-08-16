@@ -1,13 +1,17 @@
 package [%endpoint_handler%];
 # provides handler for Endpoint URI: [%endpoint_uri%]
 
+# make the 'endpoint_handler' methof available to the system
+use Exporter 'import'; 
+our @EXPORT_OK = qw(endpoint_handler);
+
 # promote better coding
 use strict;
 use warnings;
 
 # handle the request
 sub endpoint_handler {
-	my ($class,$pepper) = @_;
+	my ($pepper) = @_;
 
 	### YOUR FANTASTIC CODE GOES HERE
 	# Please see perldoc pepper for methods available in $pepper
@@ -19,13 +23,13 @@ sub endpoint_handler {
 	# it to the client.  To send JSON, return a reference to an Array or Hash.
 	# HTML or Text can also be returned. Please see the documentation for other options.
 
-	# Just a very basic start
+	# for example: just a very basic start
 	my $starter_content = {
 		'current_timestamp' => $pepper->time_to_date( time(), 'to_date_human_full' ),
 		'hello' => 'world',
 	};
 	
-	# simply return the content; Pepper.pm will send it to the client
+	# simply return the content back to the main process, and Pepper will send it out to the client
 	return $starter_content;
 
 }

@@ -14,19 +14,14 @@ use warnings;
 =cut
 
 NEXT STEPS:
-
-Start writing docs
-- What / Why
-- Pre-req's & Set Up
-- Building microservices
-- Writing scripts
-- Methods
-- Running via SystemD & Apache
-- Improve 'pepper help'
+- Move 'templates' into Pepper::Templates & update Commander.pm
 
 Test these:
+- MySQL
 - systemd service file
 - Apache config
+
+Install instructions for:  Ubuntu, CentOS/Fedora and FreeBSD
 
 =cut
 
@@ -95,9 +90,10 @@ sub execute_handler {
 	unless (eval "require $endpoint_handler_module") { # Error out if this won't import
 		$self->send_response("Could not import $endpoint_handler_module: ".$@,1);
 	}
+	eval qq{$endpoint_handler_module->import};
 	
 	# execute the request endpoint handler; this is not OO for the sake of simplicity
-	my $response_content = $endpoint_handler_module->endpoint_handler( $self );
+	my $response_content = endpoint_handler( $self );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {

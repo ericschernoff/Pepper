@@ -4,13 +4,13 @@
       "Eric Chernoff - ericschernoff at gmail.com "
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.1.9, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Minilla/v3.1.10, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "mit"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : "2"
+      "version" : 2
    },
    "name" : "Pepper",
    "no_index" : {
@@ -50,7 +50,6 @@
             "Server::Starter" : "0.33",
             "Template" : "3.007",
             "Term::ReadKey" : "2.38",
-            "Test::More" : "0.98",
             "Try::Tiny" : "0.30"
          }
       },
@@ -66,6 +65,11 @@
       "runtime" : {
          "requires" : {
             "perl" : "5.022001"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0.98"
          }
       }
    },
@@ -85,8 +89,9 @@
    "x_contributors" : [
       "Eric Chernoff <eric@weaverstreet.net>",
       "Eric Chernoff <ericschernoff@gmail.com>",
+      "root <root@majestica-dev.weaverstreet.net>",
       "root <root@pepper.weaverstreet.net>"
    ],
-   "x_serialization_backend" : "JSON::PP version 2.27400_02",
+   "x_serialization_backend" : "JSON::PP version 4.02",
    "x_static_install" : 1
 }
