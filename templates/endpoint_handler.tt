@@ -1,8 +1,8 @@
 package [%endpoint_handler%];
 # provides handler for Endpoint URI: [%endpoint_uri%]
 
-use Exporter;
-our @EXPORT_OK = qw( endpoint_handler );
+# use Exporter;
+# our @EXPORT_OK = qw( endpoint_handler );
 
 # promote better coding
 use strict;

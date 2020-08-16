@@ -97,7 +97,7 @@ sub execute_handler {
 	}	
 	
 	# execute the request endpoint handler; this is not OO for the sake of simplicity
-	my $response_content = $endpoint_handler( $pepper );
+	my $response_content = $endpoint_handler_module::endpoint_handler( $pepper );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {
