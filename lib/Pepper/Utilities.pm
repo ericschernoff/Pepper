@@ -23,6 +23,7 @@ use Template;
 
 # for being a good person
 use strict;
+use warnings;
 
 sub new {
 	my ($class, $args) = @_;

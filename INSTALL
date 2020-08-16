@@ -1,17 +1,3 @@
 apt install git build-essential cpanminus perl-doc libmysqlclient-dev 
-
-
-mysql-server apache2 zlib1g-dev libssl-dev libapache2-mod-security2 certbot
-
+apt install mysql-server apache2 zlib1g-dev libssl-dev libapache2-mod-security2 certbot
 a2enmod proxy ssl headers proxy_http rewrite
-
-
-apt install git 
-
-cpanm Minilla
-cpanm Version::Next
-
-minil new Pepper
-git remote add origin https://github.com/ericschernoff/Pepper.git
-
-

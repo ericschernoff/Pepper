@@ -4,6 +4,7 @@ $Pepper::PlackHandler::VERSION = '1.0';
 
 # for being a good person
 use strict;
+use warnings;
 
 sub new {
 	my ($class,$args) = @_;

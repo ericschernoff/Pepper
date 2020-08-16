@@ -18,6 +18,10 @@ use File::RotateLogs;	# log rotation
 use Pepper;
 use Pepper::Utilities;
 
+# be nice
+use strict;
+use warnings;
+
 # Here is the PSGI app itself; Plack needs a code reference, so work it like so:
 my $app = sub {
 	# grab the incoming request

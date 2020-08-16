@@ -1,22 +1,16 @@
 package [%endpoint_handler%];
-
 # provides handler for Endpoint URI: [%endpoint_uri%]
 
-# create the object
-sub new {
-	my ($class,$pepper) = \@_;
+use Exporter;
+our @EXPORT_OK = qw( endpoint_handler );
 
-	$self = bless {
-		'pepper' => $pepper,
-	}, $class;
-	
-	return $self;
-}
+# promote better coding
+use strict;
+use warnings;
 
 # handle the request
-sub handler {
-	my $self = shift;
-	my $pepper = $self->{pepper}; # convenience
+sub endpoint_handler {
+	my ($pepper) = @_;
 
 	### YOUR FANTASTIC CODE GOES HERE
 	# Please see perldoc pepper for methods available in $pepper
@@ -24,10 +18,9 @@ sub handler {
 	# Parameters sent via GET/POST or JSON body are available 
 	# within $pepper->{params}
 	#
-	# When you're ready, please use $pepper->send_response($content) to 
-	# return content to the client.  To send out JSON, $content should be
-	# a reference to an array or hash.  HTML or Text is also great, 
-	# and please see the documentation for other options.
+	# Simply return your prepared content and Pepper will deliver
+	# it to the client.  To send JSON, return a reference to an Array or Hash.
+	# HTML or Text can also be returned. Please see the documentation for other options.
 
 	# Just a very basic start
 	my $starter_content = {

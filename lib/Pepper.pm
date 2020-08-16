@@ -7,7 +7,9 @@ use Pepper::PlackHandler;
 use Pepper::Utilities;
 use lib '/opt/pepper/code/';
 
+# try to be a good person
 use strict;
+use warnings;
 
 =cut
 
@@ -94,18 +96,15 @@ sub execute_handler {
 		$self->send_response("Could not import $endpoint_handler_module: ".$@,1);
 	}	
 	
-	# create the object
-	my $the_handler = $endpoint_handler_module->new($self);
-	
-	# execute the request handler
-	my $response_content = $the_handler->handler();
+	# execute the request endpoint handler; this is not OO for the sake of simplicity
+	my $response_content = $endpoint_handler( $pepper );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {
 		$self->commit();
 	}
 	
-	# ship the content
+	# ship the content to the client
 	$self->send_response($response_content);
 
 }

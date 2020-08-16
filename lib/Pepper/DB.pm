@@ -11,6 +11,7 @@ use Scalar::Util qw(blessed);
 
 # time to grow up
 use strict;
+use warnings;
 
 # create ourself and connect to the database
 sub new {
