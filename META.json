@@ -1,7 +1,7 @@
 {
-   "abstract" : "Bundle/library to quick start creating microservices in Perl.",
+   "abstract" : "Quick-start bundle for creating microservices in Perl.",
    "author" : [
-      "Eric Chernoff - ericschernoff at\tgmail.com "
+      "Eric Chernoff - ericschernoff at gmail.com "
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.1.9, CPAN::Meta::Converter version 2.150010",
@@ -28,7 +28,30 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Module::Build::Tiny" : "0.035"
+            "Cpanel::JSON::XS" : "4.08",
+            "DBD::mysql" : "4.050",
+            "DBI" : "1.643",
+            "Date::Format" : "2.24",
+            "Date::Manip::Date" : "6.72",
+            "DateTime" : "1.50",
+            "Encode" : "2.88",
+            "File::RotateLogs" : "0.08",
+            "IO::Prompter" : "0.004015",
+            "LWP::Protocol::https" : "6.07",
+            "Module::Build::Tiny" : "0.035",
+            "Net::Domain" : "3.05",
+            "Path::Tiny" : "0.108",
+            "Plack" : "1.0047",
+            "Plack::Handler::Gazelle" : "0.48",
+            "Plack::Middleware::DBIx::DisconnectAll" : "0.02",
+            "Plack::Middleware::ReverseProxy" : "0.15",
+            "Plack::Middleware::Timeout" : "0.09",
+            "Scalar::Util" : "1.50",
+            "Server::Starter" : "0.33",
+            "Template" : "3.007",
+            "Term::ReadKey" : "2.38",
+            "Test::More" : "0.98",
+            "Try::Tiny" : "0.30"
          }
       },
       "develop" : {
@@ -43,33 +66,6 @@
       "runtime" : {
          "requires" : {
             "perl" : "5.022001"
-         }
-      },
-      "test" : {
-         "requires" : {
-            "Cpanel::JSON::XS" : "4.08",
-            "DBD::mysql" : "4.050",
-            "DBI" : "1.643",
-            "Date::Format" : "2.24",
-            "Date::Manip::Date" : "6.72",
-            "DateTime" : "1.50",
-            "Encode" : "2.88",
-            "File::RotateLogs" : "0.08",
-            "IO::Prompter" : "0.004015",
-            "LWP::Protocol::https" : "6.07",
-            "Net::Domain" : "3.05",
-            "Path::Tiny" : "0.108",
-            "Plack" : "1.0047",
-            "Plack::Handler::Gazelle" : "0.48",
-            "Plack::Middleware::DBIx::DisconnectAll" : "0.02",
-            "Plack::Middleware::ReverseProxy" : "0.15",
-            "Plack::Middleware::Timeout" : "0.09",
-            "Scalar::Util" : "1.50",
-            "Server::Starter" : "0.33",
-            "Template" : "3.007",
-            "Term::ReadKey" : "2.38",
-            "Test::More" : "0.98",
-            "Try::Tiny" : "0.30"
          }
       }
    },
@@ -87,6 +83,7 @@
    },
    "version" : "1.0",
    "x_contributors" : [
+      "Eric Chernoff <eric@weaverstreet.net>",
       "Eric Chernoff <ericschernoff@gmail.com>",
       "root <root@pepper.weaverstreet.net>"
    ],

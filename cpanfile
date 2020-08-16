@@ -25,6 +25,6 @@ on 'configure' => sub {
 	requires 'File::RotateLogs', '>= 0.08';
 };
 
-on 'configure' => sub {
+on 'test' => sub {
 	requires 'Test::More', '>= 0.98';
 };

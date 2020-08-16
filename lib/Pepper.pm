@@ -97,7 +97,8 @@ sub execute_handler {
 	}	
 	
 	# execute the request endpoint handler; this is not OO for the sake of simplicity
-	my $response_content = $endpoint_handler_module::endpoint_handler( $pepper );
+	my $endpoint_handler_subroutine = $endpoint_handler_module.'::endpoint_handler';
+	my $response_content = &$endpoint_handler_subroutine( $self );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {
@@ -115,7 +116,7 @@ sub determine_endpoint_module {
 	
 	# probably in plack mode
 	my $endpoint_handler_module = '';
-	my $endpoint ||= $self->{uri};
+	$endpoint ||= $self->{uri};
 
 	# did they choose to store in a database table?
 	if ($self->{config}{url_mappings_table}) {
