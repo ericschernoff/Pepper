@@ -31,7 +31,7 @@ my $app = sub {
 	
 	# eval{} the real work, so we can maybe log the errors
 	eval {
-		$pepper = Pepper->new(
+		my $pepper = Pepper->new(
 			'request' => $request, 
 			'response' => $response,
 		);

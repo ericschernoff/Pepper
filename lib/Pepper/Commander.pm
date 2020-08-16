@@ -184,7 +184,14 @@ sub setup_and_configure {
 	};
 
 	foreach my $t_file (keys %$template_files) {
-		my $dest_file = '/opt/pepper/template/'.$t_file;
+		if ($t_file eq 'pepper.psgi') {
+			my $dest_dir = 'lib';
+		} else {
+			my $dest_dir = 'template';
+		}
+		my $dest_file = '/opt/pepper/'.$dest_dir.'/'.$t_file;
+		
+		# grab it from github
 		my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/ginger/templates/'.$t_file, $dest_file);
 		if ($code != 200) {
 			die "Error: Could not retrieve $$template_files{$t_file} from GitHub\n";
@@ -399,7 +406,7 @@ sub plack_controller {
 
 		my $max_workers = $args[1] || 10;
 
-		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- /usr/local/bin/plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
 	
 	} elsif ($args[0] eq 'stop') {
 		

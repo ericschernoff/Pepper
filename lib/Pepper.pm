@@ -97,8 +97,7 @@ sub execute_handler {
 	}	
 	
 	# execute the request endpoint handler; this is not OO for the sake of simplicity
-	my $endpoint_handler_subroutine = $endpoint_handler_module.'::endpoint_handler';
-	my $response_content = &$endpoint_handler_subroutine( $self );
+	my $response_content = endpoint_handler( $self );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {
