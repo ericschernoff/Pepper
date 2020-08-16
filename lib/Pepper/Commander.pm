@@ -185,7 +185,7 @@ sub setup_and_configure {
 
 	foreach my $t_file (keys %$template_files) {
 		my $dest_file = '/opt/pepper/template/'.$t_file;
-		my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/master/templates/'.$t_file, $dest_file);
+		my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/ginger/templates/'.$t_file, $dest_file);
 		if ($code != 200) {
 			die "Error: Could not retrieve $$template_files{$t_file} from GitHub\n";
 		}
