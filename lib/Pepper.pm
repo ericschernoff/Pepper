@@ -11,25 +11,6 @@ use lib '/opt/pepper/code/';
 use strict;
 use warnings;
 
-=cut
-
-NEXT STEPS:
-x Move 'templates' into Pepper::Templates & update Commander.pm
-- pepper test db
-- Documentation
-
-Test these:
-- MySQL
-- Postgres
-- systemd service file
-- Apache config
-
-Install instructions for:  Ubuntu, CentOS/Fedora and FreeBSD
-	Ubuntu: apt install libpq-dev
-	RedHat and CentOS: yum install postgresql-devel.
-
-=cut
-
 # constructor instantiates DB and CGI classes
 sub new {
 	my ($class,%args) = @_;
@@ -189,6 +170,27 @@ __END__
 =head1 NAME
 
 Pepper - Quick-start bundle for creating microservices in Perl.
+
+
+NEXT STEPS:
+x Move 'templates' into Pepper::Templates & update Commander.pm
+x pepper test db
+- Documentation
+- sample endpoints
+
+Test these:
+x MySQL
+- Postgres
+- systemd service file
+- Apache config
+
+Install instructions for:  Ubuntu, CentOS/Fedora and FreeBSD
+	Ubuntu: apt install libpq-dev
+	RedHat and CentOS: yum install postgresql-devel.
+
+	git build-essential cpanminus 
+	perl-doc zlib1g-dev 
+	mysql-server libmysqlclient-dev
 
 =head1 DESCRIPTION / PURPOSE
 

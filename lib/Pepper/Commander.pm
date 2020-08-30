@@ -15,6 +15,7 @@ use Net::Domain qw( hostfqdn domainname );
 # for doing everything else
 use Pepper;
 use Pepper::DB;
+use Pepper::Templates;
 
 # create myself and try to grab arguments
 sub new {
@@ -129,6 +130,8 @@ sub test_db {
 	my $self = shift;
 	
 	my $utils = $self->{pepper}->{utils};
+		$utils->read_system_configuration();
+	
 	my $db;
 	eval {
 		$db = Pepper::DB->new({
@@ -139,18 +142,18 @@ sub test_db {
 	
 	if ($@) {
 		print "\nCould not connect to the database.\nError Msg: $@";
-		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n";
+		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n\n";
 	}
 	
 	# this should work on our three supported DB's
 	my ($current_timestamp) = $db->quick_select('select current_timestamp');
 	
 	if ($current_timestamp =~ /^\d{4}\-\d{2}\-\d{2}\s/) {
-		print "\nYour database connection appears to be working.\n";
+		print "\nYour database connection appears to be working.\n\n";
 		
 	} else {
 		print "\nCould not query the database.\nError Msg: $@";
-		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n";
+		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n\n";
 	
 	}
 
@@ -182,7 +185,7 @@ sub setup_and_configure {
 		['database_username', 'Username to connect to your MySQL/MariaDB/Postgres server (required)'],
 		['database_password', 'Password to connect to your MySQL/MariaDB/Postgres server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
-		['url_mappings_database', 'Database to store URL/endpoint mappings.  User named above must be able to create a table.  Leave blank to use a JSON config file.'],
+		['url_mappings_database', 'Database to store URL/endpoint mappings.  User above must be able to create.  Leave blank to use JSON config file.'],
 		['default_endpoint_module', 'Default endpoint-handler Perl module (required)'],
 	];
 	
@@ -308,11 +311,11 @@ sub set_endpoint {
 	($module_file = $$endpoint_data{endpoint_handler}) =~ s/\:\:/\//g;
 	$module_file = '/opt/pepper/code/'.$module_file.'.pm';
 	if (!(-e $module_file)) { # start the handler
-		$utils->template_process(
+		$utils->template_process({
 			'template_file' => 'endpoint_handler.tt',
 			'template_vars' => $endpoint_data,
 			'save_file' => $module_file
-		);	
+		});	
 		$extra_text = "\n".$module_file." was created.  Please edit to taste\n";
 		
 		system("chown $utils->{config}{system_username} $module_file");

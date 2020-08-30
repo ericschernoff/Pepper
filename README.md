@@ -2,6 +2,26 @@
 
 Pepper - Quick-start bundle for creating microservices in Perl.
 
+NEXT STEPS:
+x Move 'templates' into Pepper::Templates & update Commander.pm
+x pepper test db
+\- Documentation
+\- sample endpoints
+
+Test these:
+\- MySQL
+\- Postgres
+\- systemd service file
+\- Apache config
+
+Install instructions for:  Ubuntu, CentOS/Fedora and FreeBSD
+	Ubuntu: apt install libpq-dev
+	RedHat and CentOS: yum install postgresql-devel.
+
+        git build-essential cpanminus 
+        perl-doc zlib1g-dev 
+        mysql-server libmysqlclient-dev
+
 # DESCRIPTION / PURPOSE
 
 Perl is a wonderful language with an amazing ecosystem and terrific community.
@@ -43,15 +63,3 @@ Start writing docs
 # AUTHOR
 
 Eric Chernoff - ericschernoff at gmail.com 
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 14:
-
-    &#x3d;cut found outside a pod block.  Skipping to next block.
-
-- Around line 31:
-
-    &#x3d;cut found outside a pod block.  Skipping to next block.

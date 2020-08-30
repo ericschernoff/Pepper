@@ -42,6 +42,7 @@ sub new {
 		'database_type' => $$config{database_type},
 		'created' => time(),
 		'utils' => $$args{utils},
+		'connect_time' => 1,
 	}, $class;
 
 	# now connect to the database and get a real DBI object into $self->{dbh}
@@ -369,6 +370,8 @@ sub DESTROY {
 	
 	# have to do this since we have autocommit off
 	$self->do_sql('rollback');
+	my $rc = $self->{dbh}->disconnect;
+	
 }
 
 # all done
