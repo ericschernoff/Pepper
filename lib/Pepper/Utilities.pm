@@ -164,41 +164,41 @@ sub send_response {
 # subroutine to process a template via template toolkit
 # this is for server-side processing of templates
 sub template_process {
-	my ($self,%args) = @_;
-	# %args can contain: include_path, template_file, template_text, template_vars, send_out, save_file, stop_here
+	my ($self, $args) = @_;
+	# $$args can contain: include_path, template_file, template_text, template_vars, send_out, save_file, stop_here
 	# it *must* include either template_text or template_file
 
 	# declare vars
 	my ($output, $tt, $tt_error);
 
 	# default include path
-	if (!$args{include_path}) {
-		$args{include_path} = '/opt/pepper/template/';
-	} elsif ($args{include_path} !~ /\/$/) { # make sure of trailing /
-		$args{include_path} .= '/';
+	if (!$$args{include_path}) {
+		$$args{include_path} = '/opt/pepper/template/';
+	} elsif ($$args{include_path} !~ /\/$/) { # make sure of trailing /
+		$$args{include_path} .= '/';
 	}
 
-	# $args{tag_style} = 'star', 'template' or similiar
-	# seehttps://metacpan.org/pod/Template#TAG_STYLE
+	# $$args{tag_style} = 'star', 'template' or similiar
+	# see https://metacpan.org/pod/Template#TAG_STYLE
 
 	# default tag_style to regular, [% %]
-	$args{tag_style} ||= 'template';
+	$$args{tag_style} ||= 'template';
 
 	# crank up the template toolkit object, and set it up to save to the $output variable
 	$output = '';
 	$tt = Template->new({
 		ENCODING => 'utf8',
-		INCLUDE_PATH => $args{include_path},
+		INCLUDE_PATH => $$args{include_path},
 		OUTPUT => \$output,
-		TAG_STYLE => $args{tag_style},
+		TAG_STYLE => $$args{tag_style},
 	}) || $self->send_response("$Template::ERROR",1);
 
 	# process the template
-	if ($args{template_file}) {
-		$tt->process( $args{template_file}, $args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+	if ($$args{template_file}) {
+		$tt->process( $$args{template_file}, $$args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
 
-	} elsif ($args{template_text}) {
-		$tt->process( \$args{template_text}, $args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+	} elsif ($$args{template_text}) {
+		$tt->process( \$$args{template_text}, $$args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
 
 	} else { # one or the other
 		$self->send_response("Error: you must provide either template_file or template_text",1);
@@ -206,17 +206,17 @@ sub template_process {
 
 	# make sure to throw error if there is one
 	$tt_error = $tt->error();
-	$self->send_response("Template Error in $args{template_file}: $tt_error",1) if $tt_error;
+	$self->send_response("Template Error in $$args{template_file}: $tt_error",1) if $tt_error;
 
 	# send it out to the client, save to the filesystem, or return to the caller
-	if ($args{send_out}) { # output to the client
+	if ($$args{send_out}) { # output to the client
 
 		# the '2' tells mr_zebra to avoid logging an error
 		$self->send_response($output,2);
 
-	} elsif ($args{save_file}) { # save to the filesystem
-		$self->filer( $args{save_file}, 'write', $output);
-		return $args{save_file}; # just kick back the file name
+	} elsif ($$args{save_file}) { # save to the filesystem
+		$self->filer( $$args{save_file}, 'write', $output);
+		return $$args{save_file}; # just kick back the file name
 
 	} else { # just return
 		return $output;
@@ -277,6 +277,76 @@ sub logger {
 }
 
 ### START GENERAL UTILITIES
+
+# simple routine to get a DateTime object for a timestamp, e.g. 2016-09-04 16:30
+sub get_datetime_object {
+	my ($self, $time_string, $time_zone_name) = @_;
+
+	# default timezone is New York
+	$time_zone_name = $self->{time_zone_name};
+		$time_zone_name ||= 'America/New_York';
+
+	my ($dt, $year, $month, $day, $hour, $minute, $second);
+
+	# be willing to just accept the date and presume midnight
+	if ($time_string =~ /^\d{4}-\d{2}-\d{2}$/) {
+		$time_string .= ' 00:00:00';
+	}
+
+	# i will generally just send minutes; we want to support seconds too, and default to 00 seconds
+	if ($time_string =~ /\s\d{2}:\d{2}$/) {
+		$time_string .= ':00';
+	}
+
+	# if that timestring is not right, just get one for 'now'
+	if ($time_string !~ /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}$/) {
+
+		$dt = DateTime->from_epoch(
+			epoch => time(),
+			time_zone	=> $time_zone_name,
+		);
+
+	#  otherwise, get a custom datetime object
+	} else {
+
+		# have to slice-and-dice it a bit to make sure DateTime is happy
+		$time_string =~ s/-0/-/g;
+		($year,$month,$day,$hour,$minute,$second) = split /-|\s|:/, $time_string;
+		$hour =~ s/^0//;
+		$minute =~ s/^0//;
+
+		# try to set up the DateTime object, wrapping in eval in case they send an invalid time
+		# (which happens if you go for 2am on a 'spring-forward' day
+		eval {
+			$dt = DateTime->new(
+				year		=> $year,
+				month		=> $month,
+				day			=> $day,
+				hour		=> $hour,
+				minute		=> $minute,
+				second		=> $second,
+				time_zone	=> $time_zone_name,
+			);
+		};
+
+		if ($@) { # if they called for an invalid time, just move ahead and hour and try again
+			$hour++;
+			$dt = DateTime->new(
+				year		=> $year,
+				month		=> $month,
+				day			=> $day,
+				hour		=> $hour,
+				minute		=> $minute,
+				second		=> $second,
+				time_zone	=> $time_zone_name,
+			);
+		}
+
+	}
+
+	# send it out
+	return $dt;
+}
 
 # method to read/write/append to a file via Path::Tiny
 sub filer {

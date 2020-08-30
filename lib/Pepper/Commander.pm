@@ -41,6 +41,7 @@ sub run {
 		'config' => 'setup_and_configure',
 		'set-endpoint' => 'set_endpoint',
 		'list-endpoints' => 'list_endpoints',
+		'test-db' => 'test_db',
 		'start' => 'plack_controller',
 		'stop' => 'plack_controller',
 		'restart' => 'plack_controller',
@@ -86,6 +87,11 @@ This is the configuration mode.  The Pepper workspace will be created under /opt
 unless it already exists.  You will be prompted for the configuration options, and
 your configuration file will be created or overwritten.
 
+# pepper test-db
+
+This will perform a basic connection / query test on the database config you provided
+via 'pepper setup'.  Highly recommended to be run after setup.
+
 # pepper set-endpoint [URI] [PerlModule]
 
 This creates an endpoint mapping in Pepper to tell Plack how to dispatch incoming
@@ -118,6 +124,38 @@ Restarts the Plack service and put your code changes into effect.
 
 }
 
+# test that the database connection works; hard to do this in module install
+sub test_db {
+	my $self = shift;
+	
+	my $utils = $self->{pepper}->{utils};
+	my $db;
+	eval {
+		$db = Pepper::DB->new({
+			'config' => $utils->{config},
+			'utils' => $utils,
+		});
+	};
+	
+	if ($@) {
+		print "\nCould not connect to the database.\nError Msg: $@";
+		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n";
+	}
+	
+	# this should work on our three supported DB's
+	my ($current_timestamp) = $db->quick_select('select current_timestamp');
+	
+	if ($current_timestamp =~ /^\d{4}\-\d{2}\-\d{2}\s/) {
+		print "\nYour database connection appears to be working.\n";
+		
+	} else {
+		print "\nCould not query the database.\nError Msg: $@";
+		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n";
+	
+	}
+
+}
+
 # create directory structure, build configs, create examples
 sub setup_and_configure {
 	my ($self,@args) = @_;
@@ -139,10 +177,10 @@ sub setup_and_configure {
 		['system_username','System user to own and run this service (required)',$ENV{USER}],
 		['development_server','Is this a development server? (Y or N)','Y'],
 		['use_database','Connect to a database server? (Y or N)','Y'],
-		['database_server', 'Hostname or IP Address for your MySQL/MariaDB server (required)'],
+		['database_server', 'Hostname or IP Address for your MySQL/MariaDB/Postgres server (required)'],
 		['database_type', qq{Database server type; 'postgres' or 'mysql' (required)},'mysql'],
-		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
-		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
+		['database_username', 'Username to connect to your MySQL/MariaDB/Postgres server (required)'],
+		['database_password', 'Password to connect to your MySQL/MariaDB/Postgres server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
 		['url_mappings_database', 'Database to store URL/endpoint mappings.  User named above must be able to create a table.  Leave blank to use a JSON config file.'],
 		['default_endpoint_module', 'Default endpoint-handler Perl module (required)'],
@@ -433,6 +471,11 @@ command must be run as root or via sudo, and expects at least one argument.
 This is the configuration mode.  The Pepper workspace will be created under /opt/pepper,
 unless it already exists.  You will be prompted for the configuration options, and
 your configuration file will be created or overwritten.
+
+=head2 sudo pepper test-db
+
+This will perform a basic connection / query test on the database config you provided
+via 'pepper setup'.  
 
 =head2 sudo pepper set-endpoint [URI] [PerlModule]
 

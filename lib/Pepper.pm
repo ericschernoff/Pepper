@@ -14,21 +14,19 @@ use warnings;
 =cut
 
 NEXT STEPS:
-- Move 'templates' into Pepper::Templates & update Commander.pm
-- Tests!
-	
-	- pepper test db
+x Move 'templates' into Pepper::Templates & update Commander.pm
+- pepper test db
 - Documentation
 
-Ubuntu: apt install libpq-dev
-RedHat and CentOS: yum install postgresql-devel.
-
 Test these:
-- MySQL, Postgres
+- MySQL
+- Postgres
 - systemd service file
 - Apache config
 
 Install instructions for:  Ubuntu, CentOS/Fedora and FreeBSD
+	Ubuntu: apt install libpq-dev
+	RedHat and CentOS: yum install postgresql-devel.
 
 =cut
 

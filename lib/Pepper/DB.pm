@@ -221,7 +221,6 @@ sub do_sql {
 
 # list_select: easily execute sql SELECTs that will return a simple array; returns an arrayref
 sub list_select {
-
 	# grab args
 	my ($self,$sql,$bind_values) = @_;
 	# sql statement to execute and if placeholders used, arrayref of values

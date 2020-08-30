@@ -1,5 +1,5 @@
 use strict;
-use Test::More 0.98;
+use Test::More tests => 8;
 
 use_ok $_ for qw(
 	Pepper
@@ -32,14 +32,31 @@ use_ok $_ for qw(
 );
 my $pepper_templates = Pepper::Templates->new();
 my $test_template = $pepper_templates->get_template('test_template');
-my $test_output = $pepper_utils->template_process(
+my $test_output = $pepper_utils->template_process({
 	'template_text' => $test_template,
 	'template_vars' => {
 		'test_date' => '2002-04-12',
 		'test_day' => $pepper_utils->time_to_date('2002-04-12','to_day_of_week')
 	},
-);
+});
 ok($test_output, '2002-04-12 was a Friday');
+
+# test our JSON parser
+my $sample_data = {
+	'Ginger' => {
+		'born' => 1999,
+		'lived_to' => 19.75,
+	},
+	'Pepper' => {
+		'born' => 2002,
+		'lived_to' => 14,
+	},
+};
+
+my $sample_json = $pepper_utils->json_from_perl($sample_data);
+my $test_data = $pepper_utils->json_to_perl($sample_json);
+
+ok( $$sample_data{Ginger}{lived_to}, $$test_data{Ginger}{lived_to} );
 
 done_testing;
 
