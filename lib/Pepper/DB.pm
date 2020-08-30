@@ -30,14 +30,16 @@ sub new {
 		die "Cannot create DB object and continue without valid config hash.\n";
 	}
 	
-	# default DB server is localhost
+	# default DB server is localhost / type mysql
 	$$config{database_server} ||= '127.0.0.1';
+	$$config{database_type} ||= 'mysql'; # other option is postgres
 	
 	# make the object
 	my $self = bless {
 		'config' => $config, 
 		'database_server' => $$config{database_server},
 		'current_database' => $$config{connect_to_database},
+		'database_type' => $$config{database_type},
 		'created' => time(),
 		'utils' => $$args{utils},
 	}, $class;
@@ -56,23 +58,38 @@ sub connect_to_database {
 	return if $self->{dbh} && blessed($self->{dbh}) =~ /DBI/ && 
 		( ( time()-$self->{connect_time} ) < 5 || $self->{dbh}->ping );
 
-	my ($username, $password, $credentials, $dsn, $salt_phrase);
+	my ($username, $password, $credentials, $dsn);
 
 	# make the connection - fail and log if cannot connect
-	$dsn = 'DBI:mysql:database='.$self->{current_database}.';host='.$self->{database_server}.';port=3306';
-	$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
-		PrintError => 1, 
-		RaiseError => 1, 
-		AutoCommit => 0,
-		mysql_enable_utf8 => 8
-	}) or $self->log_errors('Cannot connect to '.$self->{database_server});
+	
+	# can support Postgres or Mysql/MariaDB
+	if ($self->{database_type} eq 'postgres') {
+
+		$dsn = 'DBI:Pg:database='.$self->{current_database}.';host='.$self->{database_server}.';port=5432';
+		$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
+			PrintError => 1, 
+			RaiseError => 1, 
+			AutoCommit => 0,
+		}) or $self->log_errors('Cannot connect to '.$self->{database_server});
+	
+	} else { # default to MySQL/MariaDB
+
+		$dsn = 'DBI:mysql:database='.$self->{current_database}.';host='.$self->{database_server}.';port=3306';
+		$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
+			PrintError => 1, 
+			RaiseError => 1, 
+			AutoCommit => 0,
+			mysql_enable_utf8 => 8
+		}) or $self->log_errors('Cannot connect to '.$self->{database_server});
+
+		# let's automatically reconnect if the connection is timed out
+		$self->{dbh}->{mysql_auto_reconnect} = 1;
+		# note that this doesn't seem to work too well
+
+	}
 
 	# Set Long to 1000000 for long text...may need to adjust this
 	$self->{dbh}->{LongReadLen} = 1000000;
-
-	# let's automatically reconnect if the connection is timed out
-	$self->{dbh}->{mysql_auto_reconnect} = 1;
-	# note that this doesn't seem to work too well
 
 	# let's use UTC time in DB saves
 	$self->do_sql(qq{set time_zone = '+0:00'});
@@ -81,18 +98,6 @@ sub connect_to_database {
 	$self->{connect_time} = time();
 	
 	# $self->{dbh} is now ready to go
-}
-
-# method to make sure I am alive
-sub your_birthdate {
-	my $self = shift;
-
-	# make sure we are connected to the DB
-	$self->connect_to_database();
-
-	# pull and return the info
-	my ($created) = $self->quick_select('select from_unixtime('. $self->{'created'}.')');
-	return $created;
 }
 
 # method to change the current working database for a connection
@@ -138,45 +143,6 @@ sub comma_list_select {
 sub commit {
 	my $self = shift;
 	$self->do_sql('commit');
-}
-
-# decrypt_string: a method to decrypt a base64-encoded and encrypted string
-sub decrypt_string {
-	# the arguments are the string to encrypt and the 'salt' value
-	my ($self,$encoded_and_encrypted_string,$salt_phrase) = @_;
-
-	# first required is very much required
-	return if !$encoded_and_encrypted_string;
-
-	# if no salt is sent, use $self->{config}{salt_phrase}, failing that, default to the truth
-	$salt_phrase ||= $self->{config}{salt_phrase};
-	$salt_phrase ||= 'P3pp3RWasAG00dD0g!'; # please set up a $salt_phrase
-
-	# make sure we are connected to the DB
-	$self->connect_to_database();
-	
-	# pull out the information
-	my ($plain_text_string) = $self->quick_select(qq{
-		select AES_DECRYPT(FROM_BASE64(?),SHA2(?,512))
-	},[ $encoded_and_encrypted_string, $salt_phrase ]);
-
-	# send it out
-	return $plain_text_string;
-}
-
-# helper method to generate the SQL code to decrypt a two-way encrypted column
-# used for data_loader in BaseModel
-sub decrypt_string_sql {
-	# required argument is the name of the DB column
-	my ($self,$column_name) = @_;
-
-	return if !$column_name;
-	
-	# if no salt is sent, use $self->{config}{salt_phrase}, failing that, default to the truth
-	my $salt_phrase ||= $self->{config}{salt_phrase};
-	$salt_phrase ||= 'AllHailGinger'; # please set up a $salt_phrase
-	
-	return qq{AES_DECRYPT(FROM_BASE64($column_name),SHA2('$salt_phrase',512))};
 }
 
 # do_sql: our most flexible way to execute SQL statements
@@ -252,65 +218,6 @@ sub do_sql {
 	$sth->finish;
 }
 
-# encrypt_string: a method to encrypt plain text and return a base64 version of that encrypted value
-sub encrypt_string {
-	# the arguments are the string to encrypt and the 'salt' value
-	my ($self,$plain_text_string,$salt_phrase) = @_;
-
-	# return blank if no plain text
-	return if !$plain_text_string;
-
-	# if no salt is sent, use $self->{config}{salt_phrase}, failing that, default to the truth
-	$salt_phrase ||= $self->{config}{salt_phrase};
-	$salt_phrase ||= 'AllHailGinger'; # please set up a $salt_phrase
-
-	# make sure we are connected to the DB
-	$self->connect_to_database();
-
-	# encode the string
-	my ($encoded_and_encrypted_string) = $self->quick_select(qq{
-		select TO_BASE64( AES_ENCRYPT(?,SHA2(?,512)) )
-	},[ $plain_text_string, $salt_phrase ]);
-
-
-	# ship it out
-	return $encoded_and_encrypted_string;
-}
-
-# methods to pack/unpack base64
-sub to_base64 {
-	my ($self, $regular_string) = @_;
-	
-	my ( $base64_string ) = $self->quick_select(
-		'select TO_BASE64(?)', [ $regular_string ]
-	);	
-	
-	return $base64_string;
-}
-sub from_base64 {
-	my ($self, $base64_string) = @_;
-	
-	my ( $regular_string ) = $self->quick_select(
-		'select FROM_BASE64(?)', [ $base64_string ]
-	);	
-	
-	return $regular_string;
-}
-
-# grab_column_list: get a comma list of column names for a table
-sub grab_column_list {
-	# grab args
-	my ($self,$database,$table) = @_;
-	# database name, table name, and optional 1 indicating to leave off the 'concat(code,'_',server_id),parent' bit
-
-	my ($cols) = $self->quick_select(qq{
-		select group_concat(column_name) from information_schema.columns
-		where table_schema=? and table_name=? and column_key !='PRI'
-	},[$database, $table]);
-
-	# send it out
-	return $cols;
-}
 
 # list_select: easily execute sql SELECTs that will return a simple array; returns an arrayref
 sub list_select {
@@ -469,3 +376,11 @@ sub DESTROY {
 1;
 
 __END__
+
+=head1 NAME
+
+Pepper::DB 
+
+=head1 DESCRIPTION
+
+Provides database methods for Pepper.  

@@ -112,7 +112,4 @@ sub set_cookies {
 	};	
 }
 
-
-
-
 1;

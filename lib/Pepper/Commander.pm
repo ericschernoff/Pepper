@@ -12,9 +12,6 @@ use IO::Prompter;
 # for getting default hostname/domain name
 use Net::Domain qw( hostfqdn domainname );
 
-# for retrieving important templates from the project's github
-use LWP::Simple;
-
 # for doing everything else
 use Pepper;
 use Pepper::DB;
@@ -31,6 +28,7 @@ sub new {
 		),
 	}, $class;
 
+	return $self;
 }
 
 # dispatch based on $ARGV[0]
@@ -142,10 +140,10 @@ sub setup_and_configure {
 		['development_server','Is this a development server? (Y or N)','Y'],
 		['use_database','Connect to a database server? (Y or N)','Y'],
 		['database_server', 'Hostname or IP Address for your MySQL/MariaDB server (required)'],
+		['database_type', qq{Database server type; 'postgres' or 'mysql' (required)},'mysql'],
 		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
-		['salt_phrase', 'Salt phrase for encryption routines (required)'],
 		['url_mappings_database', 'Database to store URL/endpoint mappings.  User named above must be able to create a table.  Leave blank to use a JSON config file.'],
 		['default_endpoint_module', 'Default endpoint-handler Perl module (required)'],
 	];
@@ -158,9 +156,12 @@ sub setup_and_configure {
 			$$map_set[2] = $utils->{config}{$key} if $utils->{config}{$key}; 
 		}
 	}	
-
+	
 	# shared method below	
 	$config = $self->prompt_user($config_options_map);
+
+	# make the 'database_type' all lowercase 
+	$$config{database_type} = lc($$config{database_type});
 	
 	my ($username,$pass,$uid,$gid) = getpwnam($$config{system_username})
 		or die "Error: System user '$$config{system_username}' does not exist.\n";
@@ -175,31 +176,29 @@ sub setup_and_configure {
 	# now write the file
 	$utils->write_system_configuration($config);
 
-	# download some needed templates
+	# install some needed templates
 	my $template_files = {
-		'endpoint_handler.tt' => 'endpoint handler template file',
-		'pepper.psgi' => 'PSGI script',
-		'pepper_apache.conf' => 'sample Apache config file',
-		'pepper.service' => 'sample SystemD service file',
+		'endpoint_handler.tt' => 'endpoint_handler',
+		'pepper.psgi' => 'psgi_script',
+		'pepper_apache.conf' => 'systemd_config',
+		'pepper.service' => 'apache_config',
 	};
+	my $pepper_templates = Pepper::Templates->new();
 
 	foreach my $t_file (keys %$template_files) {
-		my $dest_dir = 'template';
+		my $dest_dir = 'template'; # everything by the PSGI script goes in 'template'
 			$dest_dir = 'lib' if $t_file eq 'pepper.psgi';
 		my $dest_file = '/opt/pepper/'.$dest_dir.'/'.$t_file;
 		
 		# grab it from github
-		my $code = getstore('https://raw.githubusercontent.com/ericschernoff/Pepper/ginger/templates/'.$t_file, $dest_file);
-		if ($code != 200) {
-			die "Error: Could not retrieve $$template_files{$t_file} from GitHub\n";
-		}
+		my $template_method = $$template_files{$t_file};
+		my $contents = $pepper_templates->$template_method();
 		
 		# set the username for the SystemD service
-		if ($t_file eq 'pepper.service') {
-			my $contents = $utils->filer($dest_file);
-			$contents =~ s/User=root/User=$$config{system_username}/;
-			$contents = $utils->filer($dest_file,'write',$contents);
-		}
+		$contents =~ s/User=root/User=$$config{system_username}/;
+		
+		# now save it out
+		$contents = $utils->filer($dest_file,'write',$contents);
 	}
 
 	# set the default endpoint
@@ -352,7 +351,7 @@ sub prompt_user {
 		$prompt_key = $$prompt_set[0];
 
 		# if they want to skip database configuration, we will clear/skip the database values
-		if ($prompt_key =~ /database|salt_phrase/ && $$results{use_database} eq 'N') {
+		if ($prompt_key =~ /database/ && $$results{use_database} eq 'N') {
 			$$results{$prompt_key} = '';
 			next;
 		}
@@ -361,7 +360,7 @@ sub prompt_user {
 	
 		$the_prompt = $$prompt_set[1];
 		if ($$prompt_set[2]) {
-			if ($$prompt_set[0] =~ /password|salt_phrase/i) {
+			if ($$prompt_set[0] =~ /password/i) {
 				$the_prompt .= ' [Default: Stored value]';
 			} else {
 				$the_prompt .= ' [Default: '.$$prompt_set[2].']';
@@ -369,10 +368,10 @@ sub prompt_user {
 		}
 		$the_prompt .= ' : ';
 		
-		if ($$prompt_set[0] =~ /password|salt_phrase/i && !$$prompt_set[2]) {
+		if ($$prompt_set[0] =~ /password/i && !$$prompt_set[2]) {
 			$$results{$prompt_key} = prompt $the_prompt, -echo=>'*', -stdio, -v, -must => { 'provide a value' => qr/\S/};
 
-		} elsif ($$prompt_set[0] =~ /password|salt_phrase/i) {
+		} elsif ($$prompt_set[0] =~ /password/i) {
 			$$results{$prompt_key} = prompt $the_prompt, -echo=>'*', -stdio, -v;
 
 		} elsif ($$prompt_set[1] =~ /required/i && !$$prompt_set[2]) {
@@ -418,3 +417,47 @@ sub plack_controller {
 }
 
 1;
+
+=head1 NAME
+
+Pepper::Commander 
+
+=head1 DESCRIPTION / PURPOSE
+
+This package provides all the functionality for the 'pepper' command script, which
+allows you to configure and start/stop the Pepper Plack service.  The 'pepper' 
+command must be run as root or via sudo, and expects at least one argument.
+
+=head2 sudo pepper setup
+
+This is the configuration mode.  The Pepper workspace will be created under /opt/pepper,
+unless it already exists.  You will be prompted for the configuration options, and
+your configuration file will be created or overwritten.
+
+=head2 sudo pepper set-endpoint [URI] [PerlModule]
+
+This creates an endpoint mapping in Pepper to tell Plack how to dispatch incoming
+requests.  The first argument is a URI and the second is a target Perl module for
+handing GET/POST requests to the URI.  If these two arguments are not given, you
+will be prompted for the information.  
+
+If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
+
+=head2 sudo pepper list-endpoints
+
+This will output your configured endpoint mappings.
+
+=head2 sudo pepper start [#Workers] [dev-reload]
+
+Attempts to start the Plack service.  Provide an integer for the #Workers to spcify the 
+maximum number of Plack processes to run.  The default is 10.
+
+If you indicate a number of workers plus 'dev-reload' as the third argument, Plack 
+will be started with the auto-reload option to auto-detect changes to your code.
+If that is not provided, you will need to issue 'pepper restart' to put your code 
+changes into effect.  Enabling dev-reload will slow down Plack significantly, so it 
+is only appropriate for development environments.
+
+=head2 sudo pepper restart
+
+Restarts the Plack service and put your code changes into effect.

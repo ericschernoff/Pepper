@@ -26,5 +26,20 @@ my $opt_is_there = 0;
 	$opt_is_there = 1 if (-d '/opt');
 ok($opt_is_there, '/opt exists');
 
+# let's test template_process() and time_to_date() in one action
+use_ok $_ for qw(
+	Pepper::Templates
+);
+my $pepper_templates = Pepper::Templates->new();
+my $test_template = $pepper_templates->get_template('test_template');
+my $test_output = $pepper_utils->template_process(
+	'template_text' => $test_template,
+	'template_vars' => {
+		'test_date' => '2002-04-12',
+		'test_day' => $pepper_utils->time_to_date('2002-04-12','to_day_of_week')
+	},
+);
+ok($test_output, '2002-04-12 was a Friday');
+
 done_testing;
 

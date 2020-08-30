@@ -15,9 +15,16 @@ use warnings;
 
 NEXT STEPS:
 - Move 'templates' into Pepper::Templates & update Commander.pm
+- Tests!
+	
+	- pepper test db
+- Documentation
+
+Ubuntu: apt install libpq-dev
+RedHat and CentOS: yum install postgresql-devel.
 
 Test these:
-- MySQL
+- MySQL, Postgres
 - systemd service file
 - Apache config
 

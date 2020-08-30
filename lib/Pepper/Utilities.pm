@@ -28,7 +28,7 @@ use warnings;
 sub new {
 	my ($class, $args) = @_;
 
-	# start the object 
+	# make the object 
 	my $self = bless {
 		'request' => $$args{request},
 		'response' => $$args{response},
@@ -165,7 +165,8 @@ sub send_response {
 # this is for server-side processing of templates
 sub template_process {
 	my ($self,%args) = @_;
-	# %args can contain: include_path, template_file, template_vars, send_out, save_file, stop_here
+	# %args can contain: include_path, template_file, template_text, template_vars, send_out, save_file, stop_here
+	# it *must* include either template_text or template_file
 
 	# declare vars
 	my ($output, $tt, $tt_error);
@@ -193,7 +194,15 @@ sub template_process {
 	}) || $self->send_response("$Template::ERROR",1);
 
 	# process the template
-	$tt->process( $args{template_file}, $args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+	if ($args{template_file}) {
+		$tt->process( $args{template_file}, $args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+
+	} elsif ($args{template_text}) {
+		$tt->process( \$args{template_text}, $args{template_vars}, $output, {binmode => ':encoding(utf8)'} );
+
+	} else { # one or the other
+		$self->send_response("Error: you must provide either template_file or template_text",1);
+	}
 
 	# make sure to throw error if there is one
 	$tt_error = $tt->error();

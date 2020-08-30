@@ -29,6 +29,7 @@
       "configure" : {
          "requires" : {
             "Cpanel::JSON::XS" : "4.08",
+            "DBD::Pg" : "v3.14.2",
             "DBD::mysql" : "4.050",
             "DBI" : "1.643",
             "Date::Format" : "2.24",
@@ -37,7 +38,6 @@
             "Encode" : "2.88",
             "File::RotateLogs" : "0.08",
             "IO::Prompter" : "0.004015",
-            "LWP::Protocol::https" : "6.07",
             "Module::Build::Tiny" : "0.035",
             "Net::Domain" : "3.05",
             "Path::Tiny" : "0.108",
@@ -87,6 +87,7 @@
    },
    "version" : "1.0",
    "x_contributors" : [
+      "Eric Chernoff <eric@pepper.weaverstreet.net>",
       "Eric Chernoff <eric@weaverstreet.net>",
       "Eric Chernoff <ericschernoff@gmail.com>",
       "root <root@majestica-dev.weaverstreet.net>",
