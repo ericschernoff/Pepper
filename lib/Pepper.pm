@@ -191,7 +191,7 @@ about Perl and for seasoned users to easily stand up simple web services.
 
 This is not a framework.  This is a quick-start kit meant to simplify learning and 
 small projects.  The hope is that you will fall in love with Perl and continue your 
-journey on to Mojolicious, Dancer2, AnyEvent, PDL and all the other powerful Perl libraries.  
+journey on to Mojo, Dancer2, AnyEvent, PDL and all the other powerful Perl libraries.  
 
 This kit will support database connections to MySQL 5.7 or 8, MariaDB 10.3+. 
 Advice is provided for hosting via Apache 2.4+ and Nginx 1.18+.
@@ -228,8 +228,8 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 	FreeBSD: 
 	
 2. Recommended: If you do not already have a MySQL/MariaDB database available, 
-	please install and configure one here.  Create a designated user and database for Pepper.
-	See database vendor docs for details on this task.
+	please install and configure that here.  Create a designated user and database for Pepper.
+	See the Mysql / MariaDB docs for guidance on this task.
 	
 3. Install Pepper:  sudo cpanm Pepper
 	It may take several minutes to build and install the few dependencies.
@@ -295,9 +295,38 @@ the 'system' subdirectory or any of its files.
 
 =back
 
-=head1 ATTRIBUTES IN THE $pepper OBJECT
+=head1 WEB / PSGI ENVIRONMENT IN THE $pepper OBJECT
 
-=head1 METHODS PROVIDED BY THE $pepper OBJECT
+=head1 DATABASE METHODS PROVIDED BY THE $pepper OBJECT
+
+change_database
+comma_list_select
+commit
+do_sql
+list_select
+quick_select
+sql_hash
+
+=head1 JSON METHODS PROVIDED BY THE $pepper OBJECT
+
+json_from_perl
+json_to_perl
+read_json_file
+write_json_file
+
+=head1 RESPONSE / LOGGING / TEMPLATE METHODS PROVIDED BY THE $pepper OBJECT
+
+send_response
+template_process
+logger
+
+=head1 DATE / UTILITY METHODS PROVIDED BY THE $pepper OBJECT
+
+filer
+random_string
+time_to_date
+
+=head1 REGARDING USER AUTHENTICATION
 
 =head1 USING WITH APACHE / NGINIX AND SYSTEMD
 

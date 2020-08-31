@@ -29,7 +29,6 @@
       "configure" : {
          "requires" : {
             "Cpanel::JSON::XS" : "4.08",
-            "DBD::Pg" : "v3.14.2",
             "DBD::mysql" : "4.050",
             "DBI" : "1.643",
             "Date::Format" : "2.24",

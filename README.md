@@ -11,7 +11,6 @@ x pepper test db
 
 Test these:
 x MySQL
-\- Postgres
 \- systemd service file
 \- Apache config
 
@@ -25,10 +24,10 @@ This is not a framework.  This is a quick-start kit meant to simplify learning a
 small projects.  The hope is that you will fall in love with Perl and continue your 
 journey on to Mojolicious, Dancer2, AnyEvent, PDL and all the other powerful Perl libraries.  
 
-This kit will support database connections to MySQL 5.7 or 8, MariaDB 10.3+
-or Postgres 11+.  Advice is provided for hosting via Apache 2.4+ and Nginx 1.18+.
-There are lots of other great options out there, but choices were made for the 
-sake of simplicity.
+This kit will support database connections to MySQL 5.7 or 8, MariaDB 10.3+. 
+Advice is provided for hosting via Apache 2.4+ and Nginx 1.18+.
+There are lots of other great options out there, but choices were 
+made for the sake of simplicity.
 
 # SYNOPSIS
 
@@ -55,11 +54,11 @@ sake of simplicity.
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1\. Install the needed packages
-	Ubuntu: apt install build-essential cpanminus libpq-dev libmysqlclient-dev perl-doc zlib1g-dev 
-	CentOS: yum install postgresql-devel
+	Ubuntu: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
+	CentOS: yum install 
 	FreeBSD: 
 
-2\. Recommended: If you do not already have a MySQL/MariaDB/Postgres database available, 
+2\. Recommended: If you do not already have a MySQL/MariaDB database available, 
 	please install and configure one here.  Create a designated user and database for Pepper.
 	See database vendor docs for details on this task.
 
