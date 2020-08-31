@@ -113,3 +113,15 @@ sub set_cookies {
 }
 
 1;
+
+=head1 NAME
+
+Pepper::PlackHandler 
+
+=head1 DESCRIPTION
+
+This package receives and packs the PSGI (~ CGI) environment for the Pepper quick-start
+kit.  The main Pepper object will create this object and execute pack_psgi_variables() 
+automatically, placing the PSGI/Plack parameters appropriately.   
+
+Please execute 'pepper help' in your shell for more details on what is available.

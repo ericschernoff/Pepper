@@ -285,3 +285,15 @@ sub apache_config {
 
 
 1;
+
+__END__
+
+=head1 NAME
+
+Pepper::Templates 
+
+=head1 DESCRIPTION
+
+This provides the templates needed by Pepper::Commander, which powers the 'pepper'
+command line program.  Please execute 'pepper help' in your shell for more details
+on what is available.

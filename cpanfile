@@ -4,7 +4,6 @@ on 'configure' => sub {
 	requires 'Cpanel::JSON::XS', '>= 4.08';
 	requires 'DBI', '>= 1.643';
 	requires 'DBD::mysql', '>= 4.050';
-	requires 'DBD::Pg', '>= 3.14.2';
 	requires 'Date::Format', '>= 2.24';
 	requires 'Date::Manip::Date', '>= 6.72';
 	requires 'DateTime', '>= 1.50';

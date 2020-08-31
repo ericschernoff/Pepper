@@ -168,7 +168,7 @@ sub setup_and_configure {
 	if (!(-d '/opt/pepper')) {
 		mkdir ('/opt/pepper');
 	}
-	foreach $subdir ('code','config','lib','log','template') {
+	foreach $subdir ('code','config','lib','log','template','template/system') {
 		$subdir_full = '/opt/pepper/'.$subdir;
 		mkdir ($subdir_full) if !(-d $subdir_full);
 	}
@@ -180,14 +180,15 @@ sub setup_and_configure {
 		['system_username','System user to own and run this service (required)',$ENV{USER}],
 		['development_server','Is this a development server? (Y or N)','Y'],
 		['use_database','Connect to a database server? (Y or N)','Y'],
-		['database_server', 'Hostname or IP Address for your MySQL/MariaDB/Postgres server (required)'],
-		['database_type', qq{Database server type; 'postgres' or 'mysql' (required)},'mysql'],
-		['database_username', 'Username to connect to your MySQL/MariaDB/Postgres server (required)'],
-		['database_password', 'Password to connect to your MySQL/MariaDB/Postgres server (required)'],
+		['database_server', 'Hostname or IP Address for your MySQL/MariaDB server (required)'],
+		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
+		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
 		['url_mappings_database', 'Database to store URL/endpoint mappings.  User above must be able to create.  Leave blank to use JSON config file.'],
-		['default_endpoint_module', 'Default endpoint-handler Perl module (required)'],
+		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperModules::SomeModule)'],
 	];
+	
+	$$config{default_endpoint_module} ||= 'PepperExample';
 	
 	# does a configuration already exist?
 	if (-e $utils->{config_file}) {
@@ -227,11 +228,11 @@ sub setup_and_configure {
 	my $pepper_templates = Pepper::Templates->new();
 
 	foreach my $t_file (keys %$template_files) {
-		my $dest_dir = 'template'; # everything by the PSGI script goes in 'template'
+		my $dest_dir = 'template/system'; # everything by the PSGI script goes in 'template'
 			$dest_dir = 'lib' if $t_file eq 'pepper.psgi';
 		my $dest_file = '/opt/pepper/'.$dest_dir.'/'.$t_file;
 		
-		# grab it from github
+		# save teh template new file
 		my $template_method = $$template_files{$t_file};
 		my $contents = $pepper_templates->$template_method();
 		
@@ -312,7 +313,7 @@ sub set_endpoint {
 	$module_file = '/opt/pepper/code/'.$module_file.'.pm';
 	if (!(-e $module_file)) { # start the handler
 		$utils->template_process({
-			'template_file' => 'endpoint_handler.tt',
+			'template_file' => 'system/endpoint_handler.tt',
 			'template_vars' => $endpoint_data,
 			'save_file' => $module_file
 		});	

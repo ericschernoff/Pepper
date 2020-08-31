@@ -112,8 +112,9 @@ sub send_response {
 	}
 
 	# if they sent a valid content type, no need to change it
-	if ($content_type =~ /\//) {
+	if ($content_type && $content_type =~ /\//) {
 		# nothing to do here
+
 	} elsif ($ref_type eq "HASH" || $ref_type eq "ARRAY") { # make it into json
 		$content_type = 'application/json';
 		$content = $self->json_from_perl($content);
@@ -694,3 +695,16 @@ sub set_endpoint_mapping {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Pepper::Utilities 
+
+=head1 DESCRIPTION
+
+This package provides useful functions for web services and scripts built using the 
+Pepper quick-start kit.  These methods can be access via the main 'Pepper' object, 
+and are all documented in that package.  Please see 'perldoc Pepper' or the main
+documentation on MetaCPAN.

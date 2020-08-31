@@ -30,16 +30,14 @@ sub new {
 		die "Cannot create DB object and continue without valid config hash.\n";
 	}
 	
-	# default DB server is localhost / type mysql
+	# default DB server is localhost
 	$$config{database_server} ||= '127.0.0.1';
-	$$config{database_type} ||= 'mysql'; # other option is postgres
 	
 	# make the object
 	my $self = bless {
 		'config' => $config, 
 		'database_server' => $$config{database_server},
 		'current_database' => $$config{connect_to_database},
-		'database_type' => $$config{database_type},
 		'created' => time(),
 		'utils' => $$args{utils},
 		'connect_time' => 1,
@@ -63,37 +61,24 @@ sub connect_to_database {
 
 	# make the connection - fail and log if cannot connect
 	
-	# can support Postgres or Mysql/MariaDB
-	if ($self->{database_type} eq 'postgres') {
+	# can support Mysql/MariaDB
+	$dsn = 'DBI:mysql:database='.$self->{current_database}.';host='.$self->{database_server}.';port=3306';
+	$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
+		PrintError => 1, 
+		RaiseError => 1, 
+		AutoCommit => 0,
+		mysql_enable_utf8 => 8
+	}) or $self->log_errors('Cannot connect to '.$self->{database_server});
 
-		$dsn = 'DBI:Pg:database='.$self->{current_database}.';host='.$self->{database_server}.';port=5432';
-		$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
-			PrintError => 1, 
-			RaiseError => 1, 
-			AutoCommit => 0,
-		}) or $self->log_errors('Cannot connect to '.$self->{database_server});
-	
-	} else { # default to MySQL/MariaDB
-
-		$dsn = 'DBI:mysql:database='.$self->{current_database}.';host='.$self->{database_server}.';port=3306';
-		$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
-			PrintError => 1, 
-			RaiseError => 1, 
-			AutoCommit => 0,
-			mysql_enable_utf8 => 8
-		}) or $self->log_errors('Cannot connect to '.$self->{database_server});
-
-		# let's automatically reconnect if the connection is timed out
-		$self->{dbh}->{mysql_auto_reconnect} = 1;
-		# note that this doesn't seem to work too well
-
-	}
-
-	# Set Long to 1000000 for long text...may need to adjust this
-	$self->{dbh}->{LongReadLen} = 1000000;
+	# let's automatically reconnect if the connection is timed out
+	$self->{dbh}->{mysql_auto_reconnect} = 1;
+	# note that this doesn't seem to work too well
 
 	# let's use UTC time in DB saves
 	$self->do_sql(qq{set time_zone = '+0:00'});
+
+	# Set Long to 1000000 for long text...may need to adjust this
+	$self->{dbh}->{LongReadLen} = 1000000;
 
 	# no pings for the first 5 seconds
 	$self->{connect_time} = time();
@@ -385,4 +370,6 @@ Pepper::DB
 
 =head1 DESCRIPTION
 
-Provides database methods for Pepper.  
+Provides database methods for Pepper, including support for MySQL/MariaDB.  
+This object is created as part of a new Pepper object, so all methods are documented
+in that package's POD.  Please see 'perldoc Pepper' for more details.
