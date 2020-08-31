@@ -326,9 +326,9 @@ filer
 random_string
 time_to_date
 
-=head1 REGARDING USER AUTHENTICATION
-
 =head1 USING WITH APACHE / NGINIX AND SYSTEMD
+
+=head1 REGARDING AUTHENTICATION & SECURITY
 
 =head1 See Also
 
