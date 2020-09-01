@@ -468,15 +468,13 @@ sub time_to_date {
 	my ($self, $timestamp, $task, $time_zone_name) = @_;
 	my ($day, $dt, $diff, $month, $templ, $year);
 
-	# luggage::pack_luggage() tries to set the 'time_zone_name' attribute
-	# try to use that if no $time_zone_name arg was sent
-	$time_zone_name ||= $self->{time_zone_name};
-
+	# default timezone to UTC if no timezone sent or set
 	# if they sent a 'utc', force it to be Etc/GMT -- this is for the logger
-	$time_zone_name = 'Etc/GMT' if $time_zone_name eq 'utc';
+	$time_zone_name = 'Etc/GMT' if !$time_zone_name || $time_zone_name eq 'utc';
 
-	# default timezone to Eastern if no timezone sent or set
-	$time_zone_name ||= 'America/New_York';
+	# allow them to set a default time zone by setting $pepper->{utilities}{time_zone_name}
+	# or $ENV{PERL_DATETIME_DEFAULT_TZ}
+	$time_zone_name ||= $self->{time_zone_name} || $ENV{PERL_DATETIME_DEFAULT_TZ};
 
 	# fix up timestamp as necessary
 	if (!$timestamp) { # empty timestamp --> default to current timestamp
@@ -484,23 +482,23 @@ sub time_to_date {
 	} elsif ($timestamp =~ /\,/) { # human date...make it YYYY-MM-DD
 		($month,$day,$year) = split /\s/, $timestamp; # get its pieces
 		# turn the month into a proper number
-		if ($month =~ /Jan/) { $month = "1";
-		} elsif ($month =~ /Feb/) { $month = "2";
-		} elsif ($month =~ /Mar/) { $month = "3";
-		} elsif ($month =~ /Apr/) { $month = "4";
-		} elsif ($month =~ /May/) { $month = "5";
-		} elsif ($month =~ /Jun/) { $month = "6";
-		} elsif ($month =~ /Jul/) { $month = "7";
-		} elsif ($month =~ /Aug/) { $month = "8";
-		} elsif ($month =~ /Sep/) { $month = "9";
+		if ($month =~ /Jan/) { $month = "01";
+		} elsif ($month =~ /Feb/) { $month = "02";
+		} elsif ($month =~ /Mar/) { $month = "03";
+		} elsif ($month =~ /Apr/) { $month = "04";
+		} elsif ($month =~ /May/) { $month = "05";
+		} elsif ($month =~ /Jun/) { $month = "06";
+		} elsif ($month =~ /Jul/) { $month = "07";
+		} elsif ($month =~ /Aug/) { $month = "08";
+		} elsif ($month =~ /Sep/) { $month = "09";
 		} elsif ($month =~ /Oct/) { $month = "10";
 		} elsif ($month =~ /Nov/) { $month = "11";
 		} elsif ($month =~ /Dec/) { $month = "12"; }
+
 		# remove the comma from the date and make sure it has two digits
 		$day =~ s/\,//;
-
-		# we'll convert the epoch below via DateTime, one more check...
 		$day = '0'.$day if $day < 10;
+
 		$timestamp = $year.'-'.$month.'-'.$day;
 
 	}
@@ -530,11 +528,11 @@ sub time_to_date {
 		} else {
 			$templ = '%B %e, %Y';
 		}
-	} elsif (!$task || $task eq "to_date_human_full") { # force YYYY in above
+	} elsif ($task eq "to_date_human_full") { # force YYYY in above
 		$templ = '%B %e, %Y';
-	} elsif (!$task || $task eq "to_date_human_abbrev") { # force YYYY in above
+	} elsif ($task eq "to_date_human_abbrev") { # shorter month name in above
 		$templ = '%b %e, %Y';
-	} elsif (!$task || $task eq "to_date_human_dayname") { # unix timestamp to human date (DayOfWeekName, Mon DD, YYYY)
+	} elsif ($task eq "to_date_human_dayname") { # unix timestamp to human date (DayOfWeekName, Mon DD, YYYY)
 		($diff) = ($timestamp - time())/15552000; # drop the year if within the last six months
 		if ($diff > -1 && $diff < 1) {
 			$templ = '%A, %b %e';
@@ -547,7 +545,7 @@ sub time_to_date {
 		$templ = '%B %Y';
 	} elsif ($task eq "to_month_abbrev") { # unix timestamp to month abreviation (MonYY, i.e. Sep15)
 		$templ = '%b%y';
-	} elsif ($task eq "to_date_human_time") { # unix timestamp to human date with time (Mon DD, YYYY<br>HH:MM:SS XM)
+	} elsif ($task eq "to_date_human_time") { # unix timestamp to human date with time (Mon DD, YYYY at HH:MM:SS XM)
 		($diff) = ($timestamp - time())/31536000;
 		if ($diff >= -1 && $diff <= 1) {
 			$templ = '%b %e at %l:%M%P';
@@ -560,8 +558,6 @@ sub time_to_date {
 		$templ = '%R';
 	} elsif ($task eq "to_datetime_iso") { # ISO-formatted timestamp, i.e. 2016-09-04T16:12:00+00:00
 		$templ = '%Y-%m-%dT%X%z';
-	} elsif ($task eq "to_month_abbrev") { # epoch to abbreviation, like 'MonYY'
-		$templ = '%b%y';
 	} elsif ($task eq "to_day_of_week") { # epoch to day of the week, like 'Saturday'
 		$templ = '%A';
 	} elsif ($task eq "to_day_of_week_numeric") { # 0..6 day of the week

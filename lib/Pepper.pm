@@ -173,7 +173,7 @@ Pepper - Quick-start kit for creating microservices in Perl.
 NEXT STEPS:
 x Move 'templates' into Pepper::Templates & update Commander.pm
 x pepper test db
-- Documentation
+- Proofread Documentation
 - sample endpoints
 - sample script
 
@@ -197,8 +197,8 @@ L<https://metacpan.org> and L<https://perldoc.perl.org/>
 This kit supports database connections to MySQL 5.7/8 or MariaDB 10.3+. 
 There are many other great options out there, but one database driver
 was chosen for the sake of simplicity.  If your heart is set on Postgres,
-you may choose not to connect to MySQL/MariaDB server and instead use
-L<DBD:Pg> directly.
+answer 'N' to the 'Connect to a MySQL/MariaDB database server?' set up prompt
+and use L<DBD:Pg> instead of Pepper::DB.
 
 =head1 SYNOPSIS
 
@@ -317,12 +317,14 @@ For example:
 	}; # client gets some HTML
 	
 	# you can return plain text as well, i.e. generated config files
-
+	
 The $pepper object has lots of goodies, described in detail in the following sections.  There
-is a wealth of additional libraries in L<https://metacpan.org> and you add include your 
+is also a wealth of additional libraries in L<https://metacpan.org> and you add include your 
 own re-usable packages under /opt/pepper/code .  For instance, if many of your endpoints
 share some data-crunching routines, you could create /opt/pepper/code/MyUtils/DataCrunch.pm
-and import it as:  use MyUtils::DataCrunch;
+and import it as:  use MyUtils::DataCrunch; .  You can also add subroutines below
+the main endpoint_handler() subroutine.  Pepper is just plain Perl, and the only "rule"
+is that endpoint_handler() needs to return what will be sent to the client.
 
 =head1 WEB / PSGI ENVIRONMENT IN THE $pepper OBJECT
 
@@ -413,7 +415,7 @@ under /opt/pepper/template and please see L<Template> and L<http://www.template-
 The basic idea is to process a template with the values in a data structure to create the 
 appropriate text output.  
 
-	To process a template and have your endpoint handler return the results:
+To process a template and have your endpoint handler return the results:
 
 	return $pepper->template_process({
 		'template_file' => 'some_template.tt', 
@@ -479,26 +481,338 @@ From a web endpoint handler, you may set a cookie like this:
 
 =head1 DATABASE METHODS PROVIDED BY THE $pepper OBJECT
 
-=head2 change_database
-=head2 comma_list_select
-=head2 commit
-=head2 do_sql
-=head2 list_select
+Note, The L<DBI> database handle object is stored in $pepper->{db}->{dbh}.
+
 =head2 quick_select
+
+Use to get results for SQL SELECT's that will return one row of results.
+The required first argument is the SELECT statement, and the optional 
+second argument is an array reference of values for the placeholders.
+
+	($birth_date, $adopt_date) = $pepper->quick_select(qq{
+		select birth_date, adoption_date from family.dogs
+		where name=? and breed=?
+	},[ 'Daisy', 'Shih Tzu' ]);
+	
+	($todays_date) = $pepper->quick_select(' select curdate() ');
+
 =head2 sql_hash
+
+Very useful for multi-row results.  Creates a two-level data
+structure, where the top key is the values of the first column, and 
+the second-level keys are either the other column names or the keys you
+provide.  Returns references to the results hash and the array of
+the first level keys.
+
+	($results, $result_keys) = $pepper->sql_hash(qq{
+		select id, name, birth_date from my_family.family_members
+		where member_type=? order by name
+	},[ 'Dog']);
+	
+	You'd now have:
+	
+	$results = {
+		'1' => {
+			'name' => 'Ginger',
+			'birth_date' => 1999-08-01',
+		},
+		'2' => {
+			'name' => 'Pepper',
+			'birth_date' => 2002-04-12',
+		},
+		'3' => {
+			'name' => 'Polly',
+			'birth_date' => 2016-03-31',
+		},		
+		'4' => {
+			'name' => 'Daisy',
+			'birth_date' => 2019-08-01',
+		},
+	};
+	
+	$results = [
+		'4','1','2','3'
+	];
+
+Using alternative keys:
+
+	($results, $result_keys) = $pepper->sql_hash(qq{
+		select id, name, date_format(birth_date,'%Y') from my_family.family_members
+		where member_type=? order by name
+	},[ 'Dog' ], [ 'name','birth_year' ]);
+
+	Now, results would look like
+
+	$results = {
+		'1' => {
+			'name' => 'Ginger',
+			'birth_year' => 1999',
+		},
+		...and so forth...
+	};
+
+
+=head2 list_select
+
+Use for SELECT statements which may return multiple results with one column each.
+The required first argument is the SELECT statement to run. The optional second 
+argument is a reference to an array of values for the placeholders (recommended).
+
+	$list = $pepper->list_select(
+		'select name from my_family.family_members where member_type=?,
+		['Dog']
+	);
+	
+	# $list will look like:
+	$list = ['Ginger','Pepper','Polly','Daisy'];
+
+=head2 comma_list_select
+
+Provides the same function as list_select() but returns a scalar containing
+a comma-separated list of the values found by the SELECT statement.
+
+	$text_list = $pepper->comma_list_select(
+		'select name from my_family.family_members where member_type=?,
+		['Dog']
+	);
+	
+	# $text_list will look like:
+	$text_list = 'Ginger,Pepper,Polly,Daisy';
+
+=head2 do_sql
+
+Flexible method to execute a SQL statement of any kind. It's maybe worth noting 
+that do_sql() is the only provided method that will perform non-SELECT statements.
+
+Args are the SQL statement itself and optionally (highly-encouraged), an arrayref
+of values for placeholders.
+
+	$pepper->do_sql(qq{
+		insert into my_family.family_members
+		(name, birth_date, member_type)
+		values (?,?,?)
+	}, \@values );
+
+	$pepper->do_sql(qq{
+		insert into my_family.family_members
+		(name, birth_date, member_type)
+		values (?,?,?)
+	}, [ 'Daisy', '2019-08-01', 'Dog' );
+	
+	$pepper->do_sql(qq{
+		update my_family.family_members.
+		set name=? where id=?
+	}, ['Sandy', 6 );	
+
+For a SELECT statement, do_sql() returns a reference to an array of arrays of results.
+
+	$results = $pepper->do_sql(
+		'select code,name from finances.properties where name=?',
+		['123 Any Street']
+	);
+	while (($code,$name) = @{shift(@$results)}) {
+		print "$code == $name\n";
+	}
+
+For most uses, quick_select() and sql_hash() are much simpler for running SELECT's.
+
+=head2 change_database
+
+Changes the current working database.  This allows you to query tables without prepending their
+DB name (i.e no 'db_name.table_name').
+
+	$pepper->change_database('new_db_name');
+
+=head2 commit
+
+Pepper does not turn on auto-commit, so each web request is a database transaction (if you
+are using the database support).  This method will be called automatically at the end 
+of the web request, but if you wish to manually commit changes, just call $pepper->commit();
+
+If a request fails due, commit() is not called and the changes will be rolled-back.
 
 =head1 JSON METHODS PROVIDED BY THE $pepper OBJECT
 
+These methods provide default/basic functions of the excellent L<Cpanel::JSON::XS> library.
+
 =head2 json_from_perl
+
+Accepts a reference to a data structure and converts it to JSON text:
+
+	$json_string = $pepper->json_from_perl($hash_reference);
+	$json_string = $pepper->json_from_perl(\%some_hash);
+	# in either case, $json_string now contains a JSON representation of the data structure
+
 =head2 json_to_perl
+
+Accepts a scalar with a JSON string and converts it to a reference to a Perl data structure.
+
+	$data = $pepper->json_to_perl($json_text);
+	# maybe now you have $$data{name} or other keys / layers to access like 
+	# any other Perl hashref
+	
 =head2 read_json_file
+
+Similar to json_to_perl() but added convenience of retrieving the JSON string from a file:
+
+	$data = $pepper->read_json_file('path/to/data_file.json');
+
 =head2 write_json_file
+
+Converts Perl data structure to JSON and saves it to a file.
+
+	$pepper->write_json_file('path/to/data_file.json', $data_structure);
+
+	$pepper->write_json_file('path/to/data_file.json', \%data_structure);
 
 =head1 DATE / UTILITY METHODS PROVIDED BY THE $pepper OBJECT
 
 =head2 filer
+
+This is a basic interface for reading, writing, and appending files using the Path::Tiny library.
+
+To load the contents of a file into a scalar (aka 'slurp'):
+
+	$scalar_name = $pepper->filer('/path/to/file.ext');
+	
+To save the contents of a scalar into a file:
+
+	$pepper->filer('/path/to/new_file.ext','write',$scalar_of_content);
+	# maybe you have an array
+	$pepper->filer('/path/to/new_file.ext','write', join("\n",@array_of_lines)  );
+
+To append a file with additional content
+
+	$pepper->filer('/path/to/new_file.ext','append',$scalar_of_content);
+
 =head2 random_string
+
+Handy method to generate a random string of numbers and uppercase letters. 
+
+To create a 10-character random string:
+
+	$random_string = $pepper->random_string();
+	
+To specify that it be 25 characters long;
+
+	$longer_random_string = $pepper->random_string(25);
+
 =head2 time_to_date
+
+Useful method for converting UNIX epochs or YYYY-MM-DD dates to more human-friendly dates.
+This takes three arguments:
+
+=over 12
+
+=item A timestamp, preferably an epoch like 1018569600, but can be a date like 2002-04-12 or 'April 12, 2002'.
+The epochs are best for functions that will include the time.
+
+=item An action / command, such as 'to_year' or 'to_date_human_time'. See below for full list.
+
+=item Optionally, an Olson DB time zone name, such as 'America/New_York'.  The default is UTC / GMT.
+You can set your own default via the PERL_DATETIME_DEFAULT_TZ environmental variable or placing 
+in $pepper->{utils}->{time_zone_name}.  Most of examples below take the default time zone, which is
+UTC. U<Be sure to set the time zone if you need local times.>
+
+=back
+
+To get the epoch of 00:00:00 on a particular date:
+
+	$epoch_value = $pepper->time_to_date($date, 'to_unix_start');
+	# $epoch_value is now something like 1018569600
+
+To convert an epoch into a YYYY-MM-DD date:
+
+	$date = $pepper->time_to_date($date, 'to_date_db');
+	# $date is now something like '2002-04-12'
+	
+To convert a date or epoch to a more friendly format, such as April 12, 2002:
+
+	$peppers_birthday = $pepper->time_to_date('2002-04-12', 'to_date_human');
+	$peppers_birthday = $pepper->time_to_date(1018569600, 'to_date_human');
+	# for either case, $peppers_birthday is now 'April 12, 2002'
+	
+You can always use time() to get values for the current moment:
+
+	$todays_date_human = $pepper->time_to_date(time(), 'to_date_human');
+	# $todays_date_human is now 'September 1'
+
+'to_date_human' leaves off the year if the moment is within the last six months.
+This can be useful for displaying a history log.
+
+Use 'to_date_human_full' to force the year to be included:
+
+	$todays_date_human = $pepper->time_to_date(time(), 'to_date_human_full');
+	# $todays_date_human is now 'September 1, 2020'
+	
+Use 'to_date_human_abbrev' to abbreviate the month name:
+
+	$nice_date_string = $pepper->time_to_date('2020-09-01', 'to_date_human_abbrev');
+	# $nice_date_string is now 'Sept. 1, 2020'
+
+To include the weekday with 'to_date_human_abbrev' output:
+
+	$nicer_date_string = $pepper->time_to_date('2002-04-12', 'to_date_human_dayname');
+	# $nicer_date_string is now 'Friday, Apr 12, 2002'
+
+To extract the year from a epoch:
+
+	$year = $pepper->time_to_date(time(), 'to_year');
+	# $year is now '2020' (as of this writing)
+	
+	$year = $pepper->time_to_date(1018569600, 'to_year');
+	# $year is now '2012'
+
+To convert an epoch to its Month/Year value:
+
+	$month_year = $pepper->time_to_date(1018569600, 'to_month');
+	# $month_year is now 'April 2012'
+
+To convert an epoch to an abbreviated Month/Year value (useful for ID's):
+
+	$month_year = $pepper->time_to_date(1018569600, 'to_month_abbrev');
+	# $month_year is now 'Apr12'
+
+To retrieve a human-friendly date with the time:
+
+	$date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
+	# $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
+	
+	$date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
+	# $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
+	
+	$a_time_in_the_past = $pepper->time_to_date(1543605300,'to_date_human_time','America/Chicago');
+	# $a_time_in_the_past is now 'Nov 30, 2018 at 1:15pm'
+
+Use 'to_just_human_time' to retrieve just the human-friendly time part;
+
+	$a_time_in_the_past = $pepper->time_to_date(1543605300,'to_just_human_time','America/Chicago');
+	# $a_time_in_the_past is now '1:15pm'
+
+To get the military time:
+
+	$past_military_time = $pepper->time_to_date(1543605300,'to_just_military_time');
+	# $past_military_time is now '19:15' 
+	# I left off the time zone, so that's UTC time
+
+To extract the weekday name
+
+	$weekday_name = $pepper->time_to_date(1018569600, 'to_day_of_week');
+	$weekday_name = $pepper->time_to_date('2002-04-12', 'to_day_of_week');
+	# in both cases, $weekday_name is now 'Friday'
+
+To get the numeric day of the week (0..6):
+
+	$weekday_value = $pepper->time_to_date(1543605300,'to_day_of_week_numeric');
+	# weekday_value is now '5'
+
+To retrieve an ISO-formatted timestamp, i.e. 2004-10-04T16:12:00+00:00
+
+	$iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso');
+	# $iso_timestamp is now '2004-10-04T16:12:00+0000'
+
+	$iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso','America/Los_Angeles');
+	# $iso_timestamp is now '2004-10-04T09:12:00+0000' (it displays the UTC value)
 
 =head1 THE /opt/pepper DIRECTORY
 
@@ -537,11 +851,13 @@ the 'system' subdirectory or any of its files.
 
 =back
 
-=head1 USING WITH APACHE / NGINIX AND SYSTEMD
+=head1 USING WITH APACHE AND SYSTEMD
 
 =head1 REGARDING AUTHENTICATION & SECURITY
 
-=head1 See Also
+=head1 ABOUT THE NAME
+
+=head1 SEE ALSO
 
 http://www.template-toolkit.org/
 
