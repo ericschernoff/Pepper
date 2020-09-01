@@ -179,7 +179,7 @@ sub setup_and_configure {
 	$config_options_map = [
 		['system_username','System user to own and run this service (required)',$ENV{USER}],
 		['development_server','Is this a development server? (Y or N)','Y'],
-		['use_database','Connect to a database server? (Y or N)','Y'],
+		['use_database','Connect to a MySQL/MariaDB database server? (Y or N)','Y'],
 		['database_server', 'Hostname or IP Address for your MySQL/MariaDB server (required)'],
 		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],

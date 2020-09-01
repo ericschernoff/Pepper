@@ -94,8 +94,8 @@ sub pack_psgi_variables {
 	
 }
 
-# utility to set cookies
-sub set_cookies {
+# utility to set a cookie
+sub set_cookie {
 	my ($self,$cookie_details) = @_;
 	
 	# need at least a name and value
