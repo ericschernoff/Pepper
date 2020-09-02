@@ -705,6 +705,9 @@ sub delete_endpoint_mapping {
 			delete from $self->{config}{url_mappings_table} 
 			where endpoint_uri=?
 		}, [$endpoint_uri] );
+
+		# save this change
+		$self->{db}->commit();
 	
 	# or a JSON file?
 	} else {

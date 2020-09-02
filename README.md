@@ -2,17 +2,14 @@
 
 Pepper - Quick-start kit for creating microservices in Perl.
 
-NEXT STEPS:
-x Move 'templates' into Pepper::Templates & update Commander.pm
-x pepper test db
-\- Documentation
-\- sample endpoints
+FINAL STEPS:
+\- sample endpoint with HTML form and optional JSON output
 \- sample script
-
-Test these:
-x MySQL
-\- systemd service file
-\- Apache config
+x delete endpoints
+x systemd service file
+x Apache config
+\- Proofread Documentation
+\- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
 # DESCRIPTION / PURPOSE
 
@@ -57,13 +54,12 @@ and use [DBD:Pg](DBD:Pg) instead of Pepper::DB.
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1\. Install the needed packages
-	Ubuntu: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
-	CentOS: yum install 
-	FreeBSD: 
+	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
+	CentOS 8: yum install 
+	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
 
-2\. Recommended: If you do not already have a MySQL/MariaDB database available, 
-	please install and configure that here.  Create a designated user and database for Pepper.
-	See the Mysql / MariaDB docs for guidance on this task.
+2\. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
+	user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
 
 3\. Install Pepper:  sudo cpanm Pepper
 	It may take several minutes to build and install the few dependencies.
@@ -78,7 +74,7 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 	is to code up web endpoints.
 
 6\. Start the Plack service:  sudo pepper start
-	Then check out the results of PepperExample.pm here: https://127.0.0.1:5000 .
+	Then check out the results of PepperExample.pm here: https://127.0.0.1:5000 
 	You should receive basic JSON results.  Modify PepperExample.pm to tweak those results
 	and then restart the Plack service to test your changes:  sudo pepper restart
 	Any errors will be logged to /opt/pepper/log/fatals-YYYY-MM-DD.log (replacing YYYY-MM-DD).
@@ -107,8 +103,8 @@ For example:
         # sudo pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::WeaverStreet
         
 
-That will map any request to the /Carrboro/WeaverStreet endpoint to the endpoint\_handler()
-subroutine in /opt/pepper/code/PepperApps/Carrboro/WeaverStreet.pm and a very basic version
+That will map any request to your /Carrboro/WeaverStreet URI to the endpoint\_handler()
+subroutine within /opt/pepper/code/PepperApps/Carrboro/WeaverStreet.pm and a very basic version
 of that file will be created for you.  Simply edit and test the file to power the endpoint.
 
 If you wish to change the endpoint to another module, just re-issue the command:
@@ -318,20 +314,189 @@ From a web endpoint handler, you may set a cookie like this:
 
 # DATABASE METHODS PROVIDED BY THE $pepper OBJECT
 
+Note, The [DBI](https://metacpan.org/pod/DBI) database handle object is stored in $pepper->{db}->{dbh}.
+
+## quick\_select
+
+Use to get results for SQL SELECT's that will return one row of results.
+The required first argument is the SELECT statement, and the optional 
+second argument is an array reference of values for the placeholders.
+
+        ($birth_date, $adopt_date) = $pepper->quick_select(qq{
+                select birth_date, adoption_date from family.dogs
+                where name=? and breed=?
+        },[ 'Daisy', 'Shih Tzu' ]);
+        
+        ($todays_date) = $pepper->quick_select(' select curdate() ');
+
+## sql\_hash
+
+Very useful for multi-row results.  Creates a two-level data
+structure, where the top key is the values of the first column, and 
+the second-level keys are either the other column names or the keys you
+provide.  Returns references to the results hash and the array of
+the first level keys.
+
+        ($results, $result_keys) = $pepper->sql_hash(qq{
+                select id, name, birth_date from my_family.family_members
+                where member_type=? order by name
+        },[ 'Dog']);
+        
+        You'd now have:
+        
+        $results = {
+                '1' => {
+                        'name' => 'Ginger',
+                        'birth_date' => 1999-08-01',
+                },
+                '2' => {
+                        'name' => 'Pepper',
+                        'birth_date' => 2002-04-12',
+                },
+                '3' => {
+                        'name' => 'Polly',
+                        'birth_date' => 2016-03-31',
+                },              
+                '4' => {
+                        'name' => 'Daisy',
+                        'birth_date' => 2019-08-01',
+                },
+        };
+        
+        $results = [
+                '4','1','2','3'
+        ];
+
+Using alternative keys:
+
+        ($results, $result_keys) = $pepper->sql_hash(qq{
+                select id, name, date_format(birth_date,'%Y') from my_family.family_members
+                where member_type=? order by name
+        },[ 'Dog' ], [ 'name','birth_year' ]);
+
+        Now, results would look like
+
+        $results = {
+                '1' => {
+                        'name' => 'Ginger',
+                        'birth_year' => 1999',
+                },
+                ...and so forth...
+        };
+
+## list\_select
+
+Use for SELECT statements which may return multiple results with one column each.
+The required first argument is the SELECT statement to run. The optional second 
+argument is a reference to an array of values for the placeholders (recommended).
+
+        $list = $pepper->list_select(
+                'select name from my_family.family_members where member_type=?,
+                ['Dog']
+        );
+        
+        # $list will look like:
+        $list = ['Ginger','Pepper','Polly','Daisy'];
+
+## comma\_list\_select
+
+Provides the same function as list\_select() but returns a scalar containing
+a comma-separated list of the values found by the SELECT statement.
+
+        $text_list = $pepper->comma_list_select(
+                'select name from my_family.family_members where member_type=?,
+                ['Dog']
+        );
+        
+        # $text_list will look like:
+        $text_list = 'Ginger,Pepper,Polly,Daisy';
+
+## do\_sql
+
+Flexible method to execute a SQL statement of any kind. It's maybe worth noting 
+that do\_sql() is the only provided method that will perform non-SELECT statements.
+
+Args are the SQL statement itself and optionally (highly-encouraged), an arrayref
+of values for placeholders.
+
+        $pepper->do_sql(qq{
+                insert into my_family.family_members
+                (name, birth_date, member_type)
+                values (?,?,?)
+        }, \@values );
+
+        $pepper->do_sql(qq{
+                insert into my_family.family_members
+                (name, birth_date, member_type)
+                values (?,?,?)
+        }, [ 'Daisy', '2019-08-01', 'Dog' );
+        
+        $pepper->do_sql(qq{
+                update my_family.family_members.
+                set name=? where id=?
+        }, ['Sandy', 6 );       
+
+For a SELECT statement, do\_sql() returns a reference to an array of arrays of results.
+
+        $results = $pepper->do_sql(
+                'select code,name from finances.properties where name=?',
+                ['123 Any Street']
+        );
+        while (($code,$name) = @{shift(@$results)}) {
+                print "$code == $name\n";
+        }
+
+For most uses, quick\_select() and sql\_hash() are much simpler for running SELECT's.
+
 ## change\_database
-=head2 comma\_list\_select
-=head2 commit
-=head2 do\_sql
-=head2 list\_select
-=head2 quick\_select
-=head2 sql\_hash
+
+Changes the current working database.  This allows you to query tables without prepending their
+DB name (i.e no 'db\_name.table\_name').
+
+        $pepper->change_database('new_db_name');
+
+## commit
+
+Pepper does not turn on auto-commit, so each web request is a database transaction (if you
+are using the database support).  This method will be called automatically at the end 
+of the web request, but if you wish to manually commit changes, just call $pepper->commit();
+
+If a request fails due, commit() is not called and the changes will be rolled-back.
 
 # JSON METHODS PROVIDED BY THE $pepper OBJECT
 
+These methods provide default/basic functions of the excellent [Cpanel::JSON::XS](https://metacpan.org/pod/Cpanel%3A%3AJSON%3A%3AXS) library.
+
 ## json\_from\_perl
-=head2 json\_to\_perl
-=head2 read\_json\_file
-=head2 write\_json\_file
+
+Accepts a reference to a data structure and converts it to JSON text:
+
+        $json_string = $pepper->json_from_perl($hash_reference);
+        $json_string = $pepper->json_from_perl(\%some_hash);
+        # in either case, $json_string now contains a JSON representation of the data structure
+
+## json\_to\_perl
+
+Accepts a scalar with a JSON string and converts it to a reference to a Perl data structure.
+
+        $data = $pepper->json_to_perl($json_text);
+        # maybe now you have $$data{name} or other keys / layers to access like 
+        # any other Perl hashref
+        
+
+## read\_json\_file
+
+Similar to json\_to\_perl() but added convenience of retrieving the JSON string from a file:
+
+        $data = $pepper->read_json_file('path/to/data_file.json');
+
+## write\_json\_file
+
+Converts Perl data structure to JSON and saves it to a file.
+
+        $pepper->write_json_file('path/to/data_file.json', $data_structure);
+
+        $pepper->write_json_file('path/to/data_file.json', \%data_structure);
 
 # DATE / UTILITY METHODS PROVIDED BY THE $pepper OBJECT
 
@@ -377,8 +542,8 @@ The epochs are best for functions that will include the time.
 - An action / command, such as 'to\_year' or 'to\_date\_human\_time'. See below for full list.
 - Optionally, an Olson DB time zone name, such as 'America/New\_York'.  The default is UTC / GMT.
 You can set your own default via the PERL\_DATETIME\_DEFAULT\_TZ environmental variable or placing 
-in $pepper->{utils}->{time\_zone\_name}.  Most of examples below take the default time zone, most 
-likely UTC.  
+in $pepper->{utils}->{time\_zone\_name}.  Most of examples below take the default time zone, which is
+UTC. Be sure to set the time zone if you need local times.
 
 To get the epoch of 00:00:00 on a particular date:
 
@@ -419,20 +584,67 @@ Use 'to\_date\_human\_abbrev' to abbreviate the month name:
 
 To include the weekday with 'to\_date\_human\_abbrev' output:
 
-        $nicer_date_string = $pepper->time_to_date('2020-09-01', 'to_date_human_dayname');
+        $nicer_date_string = $pepper->time_to_date('2002-04-12', 'to_date_human_dayname');
         # $nicer_date_string is now 'Friday, Apr 12, 2002'
 
-        } elsif (!$task || $task eq "to_date_human_dayname") { # unix timestamp to human date (DayOfWeekName, Mon DD, YYYY)
-        } elsif ($task eq "to_year") { # just want year
-        } elsif ($task eq "to_month" || $task eq "to_month_name") { # unix timestamp to month name (Month YYYY)
-        } elsif ($task eq "to_month_abbrev") { # unix timestamp to month abreviation (MonYY, i.e. Sep15)
-        } elsif ($task eq "to_date_human_time") { # unix timestamp to human date with time (Mon DD, YYYY<br>HH:MM:SS XM)
-        } elsif ($task eq "to_just_human_time") { # unix timestamp to humantime (HH:MM:SS XM)
-        } elsif ($task eq "to_just_military_time") { # unix timestamp to military time
-        } elsif ($task eq "to_datetime_iso") { # ISO-formatted timestamp, i.e. 2016-09-04T16:12:00+00:00
-        } elsif ($task eq "to_month_abbrev") { # epoch to abbreviation, like 'MonYY'
-        } elsif ($task eq "to_day_of_week") { # epoch to day of the week, like 'Saturday'
-        } elsif ($task eq "to_day_of_week_numeric") { # 0..6 day of the week
+To extract the year from a epoch:
+
+        $year = $pepper->time_to_date(time(), 'to_year');
+        # $year is now '2020' (as of this writing)
+        
+        $year = $pepper->time_to_date(1018569600, 'to_year');
+        # $year is now '2012'
+
+To convert an epoch to its Month/Year value:
+
+        $month_year = $pepper->time_to_date(1018569600, 'to_month');
+        # $month_year is now 'April 2012'
+
+To convert an epoch to an abbreviated Month/Year value (useful for ID's):
+
+        $month_year = $pepper->time_to_date(1018569600, 'to_month_abbrev');
+        # $month_year is now 'Apr12'
+
+To retrieve a human-friendly date with the time:
+
+        $date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
+        # $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
+        
+        $date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
+        # $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
+        
+        $a_time_in_the_past = $pepper->time_to_date(1543605300,'to_date_human_time','America/Chicago');
+        # $a_time_in_the_past is now 'Nov 30, 2018 at 1:15pm'
+
+Use 'to\_just\_human\_time' to retrieve just the human-friendly time part;
+
+        $a_time_in_the_past = $pepper->time_to_date(1543605300,'to_just_human_time','America/Chicago');
+        # $a_time_in_the_past is now '1:15pm'
+
+To get the military time:
+
+        $past_military_time = $pepper->time_to_date(1543605300,'to_just_military_time');
+        # $past_military_time is now '19:15' 
+        # I left off the time zone, so that's UTC time
+
+To extract the weekday name
+
+        $weekday_name = $pepper->time_to_date(1018569600, 'to_day_of_week');
+        $weekday_name = $pepper->time_to_date('2002-04-12', 'to_day_of_week');
+        # in both cases, $weekday_name is now 'Friday'
+
+To get the numeric day of the week (0..6):
+
+        $weekday_value = $pepper->time_to_date(1543605300,'to_day_of_week_numeric');
+        # weekday_value is now '5'
+
+To retrieve an ISO-formatted timestamp, i.e. 2004-10-04T16:12:00+00:00
+
+        $iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso');
+        # $iso_timestamp is now '2004-10-04T16:12:00+0000'
+
+        $iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso','America/Los_Angeles');
+        # $iso_timestamp is now '2004-10-04T09:12:00+0000' (it displays the UTC value)
 
 # THE /opt/pepper DIRECTORY
 
@@ -469,9 +681,49 @@ After running 'sudo pepper setup', /opt/pepper should contain the following subd
 
 # USING WITH APACHE AND SYSTEMD
 
+Plack services like Pepper should not be exposed directly to the internet.
+Instead, you  should always use a full-featured web server like Apache and 
+Nginx as a front-end for Plack, and be sure to use TLS.  The good news is 
+that you only need to configure Apache / Nginx once (in a while).  
+
+A sample pepper\_apache.conf file will be saved under /opt/pepper/template/system
+after you run 'sudo pepper setup'. Use this file as a basis for adding a virtual
+host configuration under /etc/apache2/conf-enabled .  Several comments have been
+added with friendly suggestions.  You will want to enable several Apahce modules:
+	a2enmod proxy ssl headers proxy\_http rewrite
+
+Nginx is a great web server preferred by many smart people. I prefer Apache 
+because it can use ModSecurity with much less effort.
+
+Use Systemd keep Pepper online as a server (like Apache or MySQL).  You will 
+find an example SystemD service/config file at /opt/pepper/template/system/pepper.service .
+Customize this to your needs, such as changing the '30' on the 'ExecStart' line 
+to have more/less workers, and follow your OS guides to install as a SystemD service.
+
 # REGARDING AUTHENTICATION & SECURITY
 
+Pepper does not provide user authentication beyond looking for the 'Authorization'
+header -- but you will need to validate that in your custom code. 
+
+For basic projects, Auth0 has a generous free tier and can be easily integrated with
+Apache [https://auth0.com/docs/quickstart/webapp/apache](https://auth0.com/docs/quickstart/webapp/apache) so your Perl code will
+be able to see the confirmed identify in %ENV.
+
+You can also configure Apache/OpenID to authenticate against Google's social login
+without modifying your Perl code: [https://spin.atomicobject.com/2020/05/09/google-sso-apache/](https://spin.atomicobject.com/2020/05/09/google-sso-apache/)
+
+It is easy to configure htaccess/htpasswd authentication in Apache, which places
+the username in $ENV{REMOTE\_USER} for your Perl.  This may not be the most secure solution,
+but it may suit your needs fine.  [https://httpd.apache.org/docs/2.4/howto/auth.html](https://httpd.apache.org/docs/2.4/howto/auth.html)
+
+Please do set up HTTPS with TLS 1.2+, and please look into ModSecurity with the OWASP ruleset.
+
 # ABOUT THE NAME
+
+Our first Shih Tzu's were Ginger and Pepper.  Ginger was the most excellent, powerful
+creature to ever grace the world. Pepper was a sickly ragamuffin. Ginger chased 
+pit bulls like mice and commanded the wind, but Pepper was your friend. Pepper was
+easy to love and hard to disappoint, just like Perl.  
 
 # SEE ALSO
 
@@ -485,6 +737,10 @@ Eric Chernoff - ericschernoff at gmail.com
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 354:
+- Around line 350:
 
     You forgot a '=back' before '=head2'
+
+- Around line 708:
+
+    Deleting unknown formatting code U<>

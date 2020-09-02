@@ -352,9 +352,8 @@ sub delete_endpoint {
 			'endpoint_uri' => $args[1],
 		};
 	
-	# otherwise, prompt them for the information
+	# otherwise, prompt them for the information via shared method below	
 	} else {
-		# shared method below	
 		$endpoint_data = $self->prompt_user($endpoint_prompts);	
 	}
 
@@ -372,6 +371,9 @@ sub delete_endpoint {
 	
 	# now delete the endpoint
 	$utils->delete_endpoint_mapping( $$endpoint_data{endpoint_uri} );
+
+	# all done
+	print "\nDeleted endpoint for $$endpoint_data{endpoint_uri}\n";
 	
 }
 
