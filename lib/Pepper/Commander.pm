@@ -222,8 +222,8 @@ sub setup_and_configure {
 	my $template_files = {
 		'endpoint_handler.tt' => 'endpoint_handler',
 		'pepper.psgi' => 'psgi_script',
-		'pepper_apache.conf' => 'systemd_config',
-		'pepper.service' => 'apache_config',
+		'pepper_apache.conf' => 'apache_config',
+		'pepper.service' => 'systemd_config',
 	};
 	my $pepper_templates = Pepper::Templates->new();
 

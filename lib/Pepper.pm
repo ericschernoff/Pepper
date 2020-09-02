@@ -171,16 +171,13 @@ __END__
 Pepper - Quick-start kit for creating microservices in Perl.
 
 NEXT STEPS:
-x Move 'templates' into Pepper::Templates & update Commander.pm
-x pepper test db
 - Proofread Documentation
 - sample endpoints
 - sample script
-
-Test these:
-x MySQL
 - systemd service file
 - Apache config
+
+Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
 =head1 DESCRIPTION / PURPOSE
 
@@ -225,13 +222,12 @@ and use L<DBD:Pg> instead of Pepper::DB.
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1. Install the needed packages
-	Ubuntu: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
-	CentOS: yum install 
-	FreeBSD: 
+	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
+	CentOS 8: yum install 
+	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
 	
-2. Recommended: If you do not already have a MySQL/MariaDB database available, 
-	please install and configure that here.  Create a designated user and database for Pepper.
-	See the Mysql / MariaDB docs for guidance on this task.
+2. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
+	user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
 	
 3. Install Pepper:  sudo cpanm Pepper
 	It may take several minutes to build and install the few dependencies.
@@ -246,7 +242,7 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 	is to code up web endpoints.
 	
 6. Start the Plack service:  sudo pepper start
-	Then check out the results of PepperExample.pm here: https://127.0.0.1:5000 .
+	Then check out the results of PepperExample.pm here: https://127.0.0.1:5000 
 	You should receive basic JSON results.  Modify PepperExample.pm to tweak those results
 	and then restart the Plack service to test your changes:  sudo pepper restart
 	Any errors will be logged to /opt/pepper/log/fatals-YYYY-MM-DD.log (replacing YYYY-MM-DD).
@@ -273,8 +269,8 @@ For example:
 
 	# sudo pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::WeaverStreet
 	
-That will map any request to the /Carrboro/WeaverStreet endpoint to the endpoint_handler()
-subroutine in /opt/pepper/code/PepperApps/Carrboro/WeaverStreet.pm and a very basic version
+That will map any request to your /Carrboro/WeaverStreet URI to the endpoint_handler()
+subroutine within /opt/pepper/code/PepperApps/Carrboro/WeaverStreet.pm and a very basic version
 of that file will be created for you.  Simply edit and test the file to power the endpoint.
 
 If you wish to change the endpoint to another module, just re-issue the command:
@@ -853,9 +849,48 @@ the 'system' subdirectory or any of its files.
 
 =head1 USING WITH APACHE AND SYSTEMD
 
+Plack services like Pepper should not be exposed directly to the internet.
+Instead, you  should always use a full-featured web server like Apache and 
+Nginx as a front-end for Plack, and be sure to use TLS.  The good news is 
+that you only need to configure Apache / Nginx once (in a while).  
+
+A sample pepper_apache.conf file will be saved under /opt/pepper/template/system
+after you run 'sudo pepper setup'. Use this file as a basis for adding a virtual
+host configuration under /etc/apache2/conf-enabled .  Several comments have been
+added with friendly suggestions.
+
+Nginx is a great web server preferred by many smart people. I prefer Apache 
+because it can use ModSecurity with much less effort.
+
+Use Systemd keep Pepper online as a server (like Apache or MySQL).  You will 
+find an example SystemD service/config file at /opt/pepper/template/system/pepper.service .
+Customize this to your needs, such as changing the '30' on the 'ExecStart' line 
+to have more/less workers, and follow your OS guides to install as a SystemD service.
+
 =head1 REGARDING AUTHENTICATION & SECURITY
 
+Pepper does not provide user authentication beyond looking for the 'Authorization'
+header -- but you will need to validate that in your custom code. 
+
+For basic projects, Auth0 has a generous free tier and can be easily integrated with
+Apache L<https://auth0.com/docs/quickstart/webapp/apache> so your Perl code will
+be able to see the confirmed identify in %ENV.
+
+You can also configure Apache/OpenID to authenticate against Google's social login
+without modifying your Perl code: L<https://spin.atomicobject.com/2020/05/09/google-sso-apache/>
+
+It is easy to configure htaccess/htpasswd authentication in Apache, which places
+the username in $ENV{REMOTE_USER} for your Perl.  This may not be the most secure solution,
+but it may suit your needs fine.  L<https://httpd.apache.org/docs/2.4/howto/auth.html>
+
+Please do set up HTTPS with TLS 1.2+, and please look into ModSecurity with the OWASP ruleset.
+
 =head1 ABOUT THE NAME
+
+Our first Shih Tzu's were Ginger and Pepper.  Ginger was the most excellent, powerful
+creature to ever grace the world. Pepper was a sickly ragamuffin. Ginger chased 
+pit bulls like mice and commanded the wind, but Pepper was your friend. Pepper was
+easy to love and hard to disappoint, just like Perl.  
 
 =head1 SEE ALSO
 
