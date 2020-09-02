@@ -690,6 +690,33 @@ sub set_endpoint_mapping {
 	
 }
 
+# method to delete an endpoint mapping via 'pepper delete-endpoint'
+sub delete_endpoint_mapping {
+	my ($self, $endpoint_uri) = @_;
+	
+	if (!$endpoint_uri) {
+		$self->send_response('Error: The endpoint uri must be specified for delete_endpoint_mapping()',1);
+	}
+
+	# did they choose to store in a database table?
+	if ($self->{config}{url_mappings_table}) {
+
+		$self->{db}->do_sql(qq{
+			delete from $self->{config}{url_mappings_table} 
+			where endpoint_uri=?
+		}, [$endpoint_uri] );
+	
+	# or a JSON file?
+	} else {
+
+		my $url_mappings = $self->read_json_file( $self->{config}{url_mappings_file} );
+		delete ( $$url_mappings{$endpoint_uri} );
+		$self->write_json_file( $self->{config}{url_mappings_file}, $url_mappings );
+
+	}
+
+}
+
 1;
 
 __END__

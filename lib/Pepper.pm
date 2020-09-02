@@ -170,14 +170,14 @@ __END__
 
 Pepper - Quick-start kit for creating microservices in Perl.
 
-NEXT STEPS:
-- Proofread Documentation
-- sample endpoints
+FINAL STEPS:
+- sample endpoint with HTML form and optional JSON output
 - sample script
-- systemd service file
-- Apache config
-
-Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
+x delete endpoints
+x systemd service file
+x Apache config
+- Proofread Documentation
+- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
 =head1 DESCRIPTION / PURPOSE
 
@@ -857,7 +857,8 @@ that you only need to configure Apache / Nginx once (in a while).
 A sample pepper_apache.conf file will be saved under /opt/pepper/template/system
 after you run 'sudo pepper setup'. Use this file as a basis for adding a virtual
 host configuration under /etc/apache2/conf-enabled .  Several comments have been
-added with friendly suggestions.
+added with friendly suggestions.  You will want to enable several Apahce modules:
+	a2enmod proxy ssl headers proxy_http rewrite
 
 Nginx is a great web server preferred by many smart people. I prefer Apache 
 because it can use ModSecurity with much less effort.

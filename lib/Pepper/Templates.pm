@@ -65,14 +65,14 @@ sub endpoint_handler {
 	my ($pepper) = @_;
 
 	### YOUR FANTASTIC CODE GOES HERE
-	# Please see perldoc pepper for methods available in $pepper
-	#
 	# Parameters sent via GET/POST or JSON body are available 
 	# within $pepper->{params}
 	#
 	# Simply return your prepared content and Pepper will deliver
 	# it to the client.  To send JSON, return a reference to an Array or Hash.
 	# HTML or Text can also be returned. Please see the documentation for other options.
+	# 
+	# Please see perldoc pepper for methods available in $pepper
 
 	# for example: just a very basic start
 	my $starter_content = {
@@ -80,7 +80,7 @@ sub endpoint_handler {
 		'hello' => 'world',
 	};
 	
-	# simply return the content back to the main process, and Pepper will send it out to the client
+	# return the content back to the main process, and Pepper will send it out to the client
 	return $starter_content;
 
 }
@@ -132,7 +132,6 @@ my $app = sub {
 		# put our logic for find and executing the needed handler into the $pepper object
 		$pepper->execute_handler();
 		# that will retrieve and ship out the content
-		
 	};
 	
 	# catch the 'super' fatals, which is when the code breaks (usually syntax-error) before logging
@@ -163,6 +162,15 @@ my $app = sub {
 	# vague server name
 	$response->header('Server' => 'Pepper');
 
+	# consider setting these security headers
+	# if you have HTTPS/TLS configured:
+	# $response->header('Strict-Transport-Security' => 'max-age=63072000; includeSubdomains;');
+	
+	# to limit where JS/CSS and other content can originate.  This limits to the same URL
+	# this is how you prevent inline JavaScript and Style tags, which is how XSS attacks happen.
+	# see: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+	# $response->header('Content-Security-Policy' => qq{default-src 'self'; frame-ancestors 'self'; img-src 'self' data: 'self'; style-src 'self'});
+		
 	# finish up with our response
 	$response->finalize;
 };
@@ -231,12 +239,15 @@ WantedBy=multi-user.target};
 sub apache_config {
 	my $self = shift;
 	
-	return qq{# pepper application server virtual host
+	return qq{# NOTE: You will need to enable several modules: a2enmod proxy ssl headers proxy_http rewrite
+	
+# pepper application server virtual host
 <VirtualHost *:443>
-	ServerName YOUR.SERVERNAME.COM
-	# ServerAlias 
+	ServerName HOSTNAME.YOURDOMAIN.COM
+	# ServerAlias ANOTHER-HOSTNAME.YOURDOMAIN.COM
 	ServerAdmin you\@yourdomain.com
 
+	# basic webroot options
 	DocumentRoot /var/www/html
 	Options All
 
@@ -244,27 +255,28 @@ sub apache_config {
 		Require all granted
 	</Directory>
 
-	# enable SSL server
+	# enable HTTPS/TLS server -- this is my config, but adjust to taste
 	SSLEngine on
-	SSLProtocol -all +TLSv1 +TLSv1.2 -SSLv3
-	SSLCipherSuite HIGH:!aNULL:+SHA1:!MD5
+	SSLProtocol -all +TLSv1.2 +TLSv1.3
+	SSLHonorCipherOrder on
+	SSLCipherSuite "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-SHA256"
 	SSLCompression off
 	Header always set Strict-Transport-Security "max-age=63072000; includeSubdomains;"
 
-	SSLHonorCipherOrder on
-	SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
-
-	# START OKAY TO EDIT
+	# EFF/Certbot certificates are free and work very well.
+	# This is how I provision them:
 	# certbot --manual certonly --preferred-challenges=dns --email YOUR_EMAIL --server https://acme-v02.api.letsencrypt.org/directory --agree-tos -d YOUR_DOMAIN
+	# You will need to install 'certbot,' which involves adding a repo: https://certbot.eff.org/docs/install.html
 	SSLCertificateFile /etc/letsencrypt/live/YOUR_DOMAIN/fullchain.pem
 	SSLCertificateChainFile  /etc/letsencrypt/live/YOUR_DOMAIN/fullchain.pem
 	SSLCertificateKeyFile /etc/letsencrypt/live/YOUR_DOMAIN/privkey.pem
-	# END OKAY TO EDIT
 	
 	# try to speed things up
 	SetOutputFilter DEFLATE
 	SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png)$" no-gzip
 
+	# start our proxy config to handle requests via Plack
+	# You will need to enable the 'proxy' and 'proxy_http' modules
 	<Proxy *>
 		Order deny,allow
 		Allow from all
@@ -273,11 +285,13 @@ sub apache_config {
 	ProxyRequests Off
 	ProxyPreserveHost On
 
-	# ProxyPass /favicon.ico !
-	
+	# send *everything* to Plack -- this is how we can have any endpoint we want
 	ProxyPass / http://127.0.0.1:5000/
 	ProxyPassReverse / http://127.0.0.1:5000/
 
+	# this is how you exempt files from being served via Plack
+	# ProxyPass /favicon.ico !
+	
 	RequestHeader set X-Forwarded-HTTPS "0"
 
 </VirtualHost>};

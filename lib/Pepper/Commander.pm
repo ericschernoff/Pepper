@@ -42,6 +42,7 @@ sub run {
 		'config' => 'setup_and_configure',
 		'set-endpoint' => 'set_endpoint',
 		'list-endpoints' => 'list_endpoints',
+		'delete-endpoint' => 'delete_endpoint',
 		'test-db' => 'test_db',
 		'start' => 'plack_controller',
 		'stop' => 'plack_controller',
@@ -51,7 +52,7 @@ sub run {
 	# have to be one of these
 	if (!$args[0] || !$$dispatch{$args[0]}) {
 
-		die "Usage: sudo pepper help|setup|set-endpoint|list-endpoints|start|stop|restart\n";
+		die "Usage: sudo pepper help|setup|set-endpoint|delete-endpoint|list-endpoints|start|stop|restart\n";
 		
 	# can not do anything without a config file
 	} elsif ($args[0] ne 'setup' && !(-e $self->{pepper}->{utils}->{config_file})) {
@@ -60,7 +61,7 @@ sub run {
 	# must run as root
 	} elsif ($ENV{USER} ne 'root') {
 	
-		die "Usage: sudo pepper setup|set-endpoint|start|stop|restart\nThis command must be run as root.\n";
+		die "Usage: sudo pepper setup|set-endpoint|delete-endpoint|start|stop|restart\nThis command must be run as root.\n";
 	
 	# otherwise, run it
 	} else {
@@ -82,18 +83,18 @@ pepper: Utility command to configure and control the Pepper environment.
 This command must be run as root or via sudo, and expects at least one
 argument.
 
-# pepper setup
+# sudo pepper setup
 
 This is the configuration mode.  The Pepper workspace will be created under /opt/pepper,
 unless it already exists.  You will be prompted for the configuration options, and
 your configuration file will be created or overwritten.
 
-# pepper test-db
+# sudo pepper test-db
 
 This will perform a basic connection / query test on the database config you provided
 via 'pepper setup'.  Highly recommended to be run after setup.
 
-# pepper set-endpoint [URI] [PerlModule]
+# sudo pepper set-endpoint [URI] [PerlModule]
 
 This creates an endpoint mapping in Pepper to tell Plack how to dispatch incoming
 requests.  The first argument is a URI and the second is a target Perl module for
@@ -102,11 +103,15 @@ will be prompted for the information.
 
 If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
 
-# pepper list-endpoints
+# sudo pepper list-endpoints
 
 This will output your configured endpoint mappings.
 
-# pepper start [#Workers] [dev-reload]
+# sudo pepper delete-endpoint [URI]
+
+Removes an endpoint mapping from Pepper.  The Perl module will not be deleted.
+
+# sudo pepper start [#Workers] [dev-reload]
 
 Attempts to start the Plack service.  Provide an integer for the #Workers to spcify the 
 maximum number of Plack processes to run.  The default is 10.
@@ -117,7 +122,7 @@ If that is not provided, you will need to issue 'pepper restart' to put your cod
 changes into effect.  Enabling dev-reload will slow down Plack significantly, so it 
 is only appropriate for development environments.
 
-# pepper restart
+# sudo pepper restart
 
 Restarts the Plack service and put your code changes into effect.
 
@@ -330,6 +335,47 @@ sub set_endpoint {
 	
 }
 
+# method to remove an endpoint mapping from the system
+sub delete_endpoint {
+	my ($self,@args) = @_;
+
+	my $endpoint_prompts = [
+		['endpoint_uri','URI for endpoint to delete, such as /hello/world (required)'],
+	];
+	
+	my $endpoint_data;
+
+	# if they passed in two args, we can use those for the endpoints
+	if ($args[1]) {
+		
+		$endpoint_data = {
+			'endpoint_uri' => $args[1],
+		};
+	
+	# otherwise, prompt them for the information
+	} else {
+		# shared method below	
+		$endpoint_data = $self->prompt_user($endpoint_prompts);	
+	}
+
+	# we need the configuration for this
+	my $utils = $self->{pepper}->{utils}; # sanity
+	$utils->read_system_configuration();
+
+	# create a DB object if saving endpoints in a table
+	if ($utils->{config}{url_mappings_table}) {
+		$utils->{db} = Pepper::DB->new({
+			'config' => $utils->{config},
+			'utils' => $utils,
+		});
+	}	
+	
+	# now delete the endpoint
+	$utils->delete_endpoint_mapping( $$endpoint_data{endpoint_uri} );
+	
+}
+
+
 # method to list all of the existing endpoints
 sub list_endpoints {
 	my ($self) = @_;
@@ -493,6 +539,10 @@ If the Perl module does not exist under /opt/pepper/code, an initial version wil
 =head2 sudo pepper list-endpoints
 
 This will output your configured endpoint mappings.
+
+=head2 sudo pepper delete-endpoint [URI]
+
+Removes an endpoint mapping from Pepper.  The Perl module will not be deleted.
 
 =head2 sudo pepper start [#Workers] [dev-reload]
 
