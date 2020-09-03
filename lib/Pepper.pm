@@ -171,12 +171,12 @@ Pepper - Quick-start kit for creating microservices in Perl.
 FINAL STEPS:
 x Make sample endpoints go into PepperApps
 x sample endpoint with HTML form and optional JSON output
+x Setup fixes:
+	x check the database connection in real time
+	x Error sysopen on '/opt/pepper/code/PepperApps/HTMLExample.pm210601524161479': No such file or directory at /usr/local/share/perl/5.30.0/Pepper/Utilities.pm line 369.
+	x allow for blank default endpoint
 - sample script
 - option to hide error messages
-- Setup fixes:
-	- check the database connection in real time
-	- allow for blank default endpoint
-	- Error sysopen on '/opt/pepper/code/PepperApps/HTMLExample.pm210601524161479': No such file or directory at /usr/local/share/perl/5.30.0/Pepper/Utilities.pm line 369.
 - test-endpoint
 - Proofread Documentation
 - Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
@@ -184,7 +184,7 @@ x sample endpoint with HTML form and optional JSON output
 =head1 DESCRIPTION / PURPOSE
 
 Perl is a wonderful language with an amazing ecosystem and terrific community.
-This quick-start kit is meant for new users to easily experiment and learn
+This quick-start kit is designed for new users to easily experiment and learn
 about Perl and for seasoned users to easily stand up simple web services.
 
 This is not a framework.  This is a quick-start kit meant to simplify learning and 
@@ -196,7 +196,7 @@ L<https://metacpan.org> and L<https://perldoc.perl.org/>
 This kit supports database connections to MySQL 5.7/8 or MariaDB 10.3+. 
 There are many other great options out there, but one database driver
 was chosen for the sake of simplicity.  If your heart is set on Postgres,
-answer 'N' to the 'Connect to a MySQL/MariaDB database server?' set up prompt
+answer 'N' to the 'Connect to a MySQL/MariaDB database server?' setup prompt
 and use L<DBD:Pg> instead of Pepper::DB.
 
 =head1 SYNOPSIS

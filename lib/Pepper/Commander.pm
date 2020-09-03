@@ -130,7 +130,9 @@ Restarts the Plack service and put your code changes into effect.
 
 # test that the database connection works; hard to do this in module install
 sub test_db {
-	my $self = shift;
+	my ($self,$mode) = @_;
+	
+	$mode ||= 'print';
 	
 	my $utils = $self->{pepper}->{utils};
 		$utils->read_system_configuration();
@@ -151,13 +153,20 @@ sub test_db {
 	# this should work on our three supported DB's
 	my ($current_timestamp) = $db->quick_select('select current_timestamp');
 	
+	my $result_message;
 	if ($current_timestamp =~ /^\d{4}\-\d{2}\-\d{2}\s/) {
-		print "\nYour database connection appears to be working.\n\n";
+		$result_message = "\nYour database connection appears to be working.\n\n";
 		
 	} else {
-		print "\nCould not query the database.\nError Msg: $@";
-		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n\n";
+		$result_message = "\nCould not query the database.\nError Msg: $@".
+							"\nPlease confirm config and re-run 'sudo pepper setup' as needed.\n\n";
 	
+	}
+
+	# if we are in setup mode, we will exit here; otherwise, we just print
+	print $result_message;
+	if ($mode eq 'setup' && $result_message =~ /Error/) {
+		exit;
 	}
 
 }
@@ -188,7 +197,7 @@ sub setup_and_configure {
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
 		['url_mappings_database', 'Database to store URL/endpoint mappings.  User above must be able to create.  Leave blank to use JSON config file.'],
-		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperModules::SomeModule)'],
+		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperApps::SomeModule) Leave blank for example module.'],
 	];
 	
 	$$config{default_endpoint_module} ||= 'PepperApps::PepperExample';
@@ -217,6 +226,11 @@ sub setup_and_configure {
 	
 	# now write the file
 	$utils->write_system_configuration($config);
+	
+	# if they want to connect to a database, let's test that now
+	if ($$config{use_database} eq 'Y') {
+		$self->test_db();
+	}
 
 	# install some needed templates
 	my $template_files = {
@@ -250,6 +264,7 @@ sub setup_and_configure {
 	# if the HTML endpoint example isn't already there, add it in
 	my $html_example_handler = '/opt/pepper/code/PepperApps/HTMLExample.pm';
 	if (!(-e "$html_example_handler")) {
+		mkdir( '/opt/pepper/code/PepperApps');
 		my $html_example_code = $pepper_templates->html_example_endpoint('perl');
 		$utils->filer($html_example_handler,'write',$html_example_code);
 		$self->set_endpoint('/pepper/html_example','/pepper/html_example','PepperApps::HTMLExample');
@@ -540,7 +555,8 @@ via 'pepper setup'.
 This creates an endpoint mapping in Pepper to tell Plack how to dispatch incoming
 requests.  The first argument is a URI and the second is a target Perl module for
 handing GET/POST requests to the URI.  If these two arguments are not given, you
-will be prompted for the information.  
+will be prompted for the information.  Use 'default' for the URI to set a default
+endpoint handler.
 
 If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
 
