@@ -3,9 +3,16 @@
 Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
-\- Make sample endpoints go into PepperApps
-\- sample endpoint with HTML form and optional JSON output
+x Make sample endpoints go into PepperApps
+x sample endpoint with HTML form and optional JSON output
 \- sample script
+\- option to hide error messages
+\- Tests: all libraries
+\- Setup fixes:
+	- only need sudo for setup?
+	- check the database connection in real time
+	- allow for blank default endpoint
+	- Error sysopen on '/opt/pepper/code/PepperApps/HTMLExample.pm210601524161479': No such file or directory at /usr/local/share/perl/5.30.0/Pepper/Utilities.pm line 369.
 \- test-endpoint
 \- Proofread Documentation
 \- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
@@ -736,10 +743,10 @@ Eric Chernoff - ericschernoff at gmail.com
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 347:
+- Around line 354:
 
     You forgot a '=back' before '=head2'
 
-- Around line 705:
+- Around line 712:
 
     Deleting unknown formatting code U<>

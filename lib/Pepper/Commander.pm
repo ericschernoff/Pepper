@@ -52,16 +52,16 @@ sub run {
 	# have to be one of these
 	if (!$args[0] || !$$dispatch{$args[0]}) {
 
-		die "Usage: sudo pepper help|setup|set-endpoint|delete-endpoint|list-endpoints|start|stop|restart\n";
+		die "Usage: pepper help|setup|set-endpoint|delete-endpoint|list-endpoints|test-db|start|stop|restart\n('setup' must be run via sudo/root.)\n";
 		
 	# can not do anything without a config file
 	} elsif ($args[0] ne 'setup' && !(-e $self->{pepper}->{utils}->{config_file})) {
 		die "You must run 'pepper setup' to create a config file.\n";
 	
-	# must run as root
-	} elsif ($ENV{USER} ne 'root') {
+	# setup must run as root
+	} elsif ($args[0] eq 'setup' && $> > 0) {
 	
-		die "Usage: sudo pepper setup|set-endpoint|delete-endpoint|start|stop|restart\nThis command must be run as root.\n";
+		die "The 'pepper setup' command must be run via sudo / as root.\n";
 	
 	# otherwise, run it
 	} else {
@@ -80,21 +80,19 @@ print qq{
 
 pepper: Utility command to configure and control the Pepper environment.
 
-This command must be run as root or via sudo, and expects at least one
-argument.
-
 # sudo pepper setup
 
-This is the configuration mode.  The Pepper workspace will be created under /opt/pepper,
-unless it already exists.  You will be prompted for the configuration options, and
-your configuration file will be created or overwritten.
+This is the configuration mode and must be run as root or via sudo. The Pepper 
+workspace will be created under /opt/pepper, unless it already exists.  You will 
+be prompted for the configuration options, and your configuration file will be 
+created or overwritten.
 
-# sudo pepper test-db
+# pepper test-db
 
 This will perform a basic connection / query test on the database config you provided
 via 'pepper setup'.  Highly recommended to be run after setup.
 
-# sudo pepper set-endpoint [URI] [PerlModule]
+# pepper set-endpoint [URI] [PerlModule]
 
 This creates an endpoint mapping in Pepper to tell Plack how to dispatch incoming
 requests.  The first argument is a URI and the second is a target Perl module for
@@ -103,15 +101,15 @@ will be prompted for the information.
 
 If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
 
-# sudo pepper list-endpoints
+# pepper list-endpoints
 
 This will output your configured endpoint mappings.
 
-# sudo pepper delete-endpoint [URI]
+# pepper delete-endpoint [URI]
 
 Removes an endpoint mapping from Pepper.  The Perl module will not be deleted.
 
-# sudo pepper start [#Workers] [dev-reload]
+# pepper start [#Workers] [dev-reload]
 
 Attempts to start the Plack service.  Provide an integer for the #Workers to spcify the 
 maximum number of Plack processes to run.  The default is 10.
@@ -122,7 +120,7 @@ If that is not provided, you will need to issue 'pepper restart' to put your cod
 changes into effect.  Enabling dev-reload will slow down Plack significantly, so it 
 is only appropriate for development environments.
 
-# sudo pepper restart
+# pepper restart
 
 Restarts the Plack service and put your code changes into effect.
 
@@ -207,9 +205,6 @@ sub setup_and_configure {
 	# shared method below	
 	$config = $self->prompt_user($config_options_map);
 
-	# make the 'database_type' all lowercase 
-	$$config{database_type} = lc($$config{database_type});
-	
 	my ($username,$pass,$uid,$gid) = getpwnam($$config{system_username})
 		or die "Error: System user '$$config{system_username}' does not exist.\n";
 	
@@ -530,16 +525,17 @@ command must be run as root or via sudo, and expects at least one argument.
 
 =head2 sudo pepper setup
 
-This is the configuration mode.  The Pepper workspace will be created under /opt/pepper,
-unless it already exists.  You will be prompted for the configuration options, and
-your configuration file will be created or overwritten.
+This is the configuration mode and must be run as root or via sudo. The Pepper 
+workspace will be created under /opt/pepper, unless it already exists.  You will 
+be prompted for the configuration options, and your configuration file will be 
+created or overwritten.
 
-=head2 sudo pepper test-db
+=head2 pepper test-db
 
 This will perform a basic connection / query test on the database config you provided
 via 'pepper setup'.  
 
-=head2 sudo pepper set-endpoint [URI] [PerlModule]
+=head2 pepper set-endpoint [URI] [PerlModule]
 
 This creates an endpoint mapping in Pepper to tell Plack how to dispatch incoming
 requests.  The first argument is a URI and the second is a target Perl module for
@@ -548,15 +544,15 @@ will be prompted for the information.
 
 If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
 
-=head2 sudo pepper list-endpoints
+=head2 pepper list-endpoints
 
 This will output your configured endpoint mappings.
 
-=head2 sudo pepper delete-endpoint [URI]
+=head2 pepper delete-endpoint [URI]
 
 Removes an endpoint mapping from Pepper.  The Perl module will not be deleted.
 
-=head2 sudo pepper start [#Workers] [dev-reload]
+=head2 pepper start [#Workers] [dev-reload]
 
 Attempts to start the Plack service.  Provide an integer for the #Workers to spcify the 
 maximum number of Plack processes to run.  The default is 10.
@@ -567,6 +563,6 @@ If that is not provided, you will need to issue 'pepper restart' to put your cod
 changes into effect.  Enabling dev-reload will slow down Plack significantly, so it 
 is only appropriate for development environments.
 
-=head2 sudo pepper restart
+=head2 pepper restart
 
 Restarts the Plack service and put your code changes into effect.
