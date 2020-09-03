@@ -193,7 +193,7 @@ sub setup_and_configure {
 		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperModules::SomeModule)'],
 	];
 	
-	$$config{default_endpoint_module} ||= 'PepperExample';
+	$$config{default_endpoint_module} ||= 'PepperApps::PepperExample';
 	
 	# does a configuration already exist?
 	if (-e $utils->{config_file}) {
@@ -226,6 +226,7 @@ sub setup_and_configure {
 	# install some needed templates
 	my $template_files = {
 		'endpoint_handler.tt' => 'endpoint_handler',
+		'html_example.tt' => 'html_example_endpoint',
 		'pepper.psgi' => 'psgi_script',
 		'pepper_apache.conf' => 'apache_config',
 		'pepper.service' => 'systemd_config',
@@ -245,14 +246,22 @@ sub setup_and_configure {
 		$contents =~ s/User=root/User=$$config{system_username}/;
 		
 		# now save it out
-		$contents = $utils->filer($dest_file,'write',$contents);
+		$utils->filer($dest_file,'write',$contents);
 	}
 
-	# set the default endpoint
+	# set the default example endpoint
 	$self->set_endpoint('default','default',$$config{default_endpoint_module});
 
+	# if the HTML endpoint example isn't already there, add it in
+	my $html_example_handler = '/opt/pepper/code/PepperApps/HTMLExample.pm';
+	if (!(-e "$html_example_handler")) {
+		my $html_example_code = $pepper_templates->html_example_endpoint('perl');
+		$utils->filer($html_example_handler,'write',$html_example_code);
+		$self->set_endpoint('/pepper/html_example','/pepper/html_example','PepperApps::HTMLExample');
+	}
+
 	# the system user owns the directory tree
-	system("chown -R $$config{system_username} /opt/pepper");
+	system("chown -R $$config{system_username}:$$config{system_username} /opt/pepper");
 	
 	print "\nConfiguration complete and workspace ready under /opt/pepper\n";
 
@@ -309,6 +318,7 @@ sub set_endpoint {
 				$directory_path .= '/'.$part;
 				if (!(-d $directory_path)) {
 					mkdir($directory_path);
+					system("chown -R $utils->{config}{system_username}:$utils->{config}{system_username} $directory_path");		
 				}
 			}
 		}
@@ -324,7 +334,7 @@ sub set_endpoint {
 		});	
 		$extra_text = "\n".$module_file." was created.  Please edit to taste\n";
 		
-		system("chown $utils->{config}{system_username} $module_file");
+		system("chown $utils->{config}{system_username}:$utils->{config}{system_username} $module_file");
 		
 	} else {
 		$extra_text = "\n".$module_file." already exists and was left unchanged.\n";

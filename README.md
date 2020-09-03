@@ -3,11 +3,10 @@
 Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
+\- Make sample endpoints go into PepperApps
 \- sample endpoint with HTML form and optional JSON output
 \- sample script
-x delete endpoints
-x systemd service file
-x Apache config
+\- test-endpoint
 \- Proofread Documentation
 \- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
@@ -737,10 +736,10 @@ Eric Chernoff - ericschernoff at gmail.com
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 350:
+- Around line 347:
 
     You forgot a '=back' before '=head2'
 
-- Around line 708:
+- Around line 705:
 
     Deleting unknown formatting code U<>

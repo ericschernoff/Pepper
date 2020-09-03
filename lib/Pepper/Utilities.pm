@@ -476,6 +476,9 @@ sub time_to_date {
 	# or $ENV{PERL_DATETIME_DEFAULT_TZ}
 	$time_zone_name ||= $self->{time_zone_name} || $ENV{PERL_DATETIME_DEFAULT_TZ};
 
+	# set the time zone if not set
+	$self->{time_zone_name} ||= $time_zone_name;
+
 	# fix up timestamp as necessary
 	if (!$timestamp) { # empty timestamp --> default to current timestamp
 		$timestamp = time();

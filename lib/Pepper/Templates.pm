@@ -52,17 +52,14 @@ sub endpoint_handler {
 	return q[package [%endpoint_handler%];
 # provides handler for Endpoint URI: [%endpoint_uri%]
 
-# make the 'endpoint_handler' methof available to the system
-use Exporter 'import'; 
-our @EXPORT_OK = qw(endpoint_handler);
-
 # promote better coding
 use strict;
 use warnings;
 
 # handle the request
 sub endpoint_handler {
-	my ($pepper) = @_;
+	my ($class,$pepper) = @_;  
+	# the $class is there becauase this is a fake object; please see https://perldoc.perl.org/5.32.0/perlootut.html
 
 	### YOUR FANTASTIC CODE GOES HERE
 	# Parameters sent via GET/POST or JSON body are available 
@@ -81,11 +78,118 @@ sub endpoint_handler {
 	};
 	
 	# return the content back to the main process, and Pepper will send it out to the client
+	# sending a data structure back will send that structure in JSON to the client
+	# you can alse return HTML or any text 
+	
 	return $starter_content;
 
 }
 
 1;];
+}
+
+# templates for the HTML example endpoint
+sub html_example_endpoint {
+	my ($self,$send_handler) = @_;
+	
+	# we have two parts to this: a TT template and a endpoint handler module
+	if (!$send_handler) {
+		return q[[%# This template is used for the /pepper/html_example example endpoint.  
+	Please see /opt/pepper/code/PepperApps/HTMLExample.pm %]
+	
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Pepper HTML Example</title>
+</head>
+<body>
+
+[% IF provided_phrase %]
+	<h3>Results of Form</h3>
+	<ul>
+	[% FOREACH fact IN phrase_facts.keys.sort %]
+	   <li> [% fact %] == [% phrase_facts.$fact %] </li>
+	[% END %]	
+	</ul>
+	
+	<h3>Resubmit our Very Basic Form</h3>
+	
+	[% SET submit_word = 'Re-Submit' %]
+	
+[% ELSE %]
+
+	<h3>Very Basic Form</h3>
+
+	[% SET submit_word = 'Submit' %]
+	
+[% END %]
+
+<form action="/pepper/html_example" method="post">
+
+<strong>Provide a phrase:</strong>
+<br/><input type="text" size="40" name="provided_phrase" value="[%provided_phrase%]"/>
+<br/><br/>
+
+<strong>Return JSON:</strong>
+<br/><input type="checkbox" name="return_json" value="yes"/>&nbsp;Click to have the response be JSON instead of HTML.
+<br/>Leave un-checked to compare the results with the content of the template.
+<br/><br/>
+
+<button type="Submit">[%submit_word%] Form</button>
+
+</form>
+
+</body>
+</html>		
+		];
+	# otherwise, send out the perl module
+	} else {
+	
+		return q[package PepperApps::HTMLExample;
+# provides the example handler for Endpoint URI: /pepper_examples/html_example
+
+# promote better coding
+use strict;
+use warnings;
+
+# our request handler method
+sub endpoint_handler {
+	my ($class,$pepper) = @_;
+	# the $class is there becauase this is a fake object; please see https://perldoc.perl.org/5.32.0/perlootut.html
+
+	# if they submitted the form, prepare our silly example data structure
+	my $phrase_facts = {};
+	if ($pepper->{params}{provided_phrase}) {
+		# put together some useless facts
+		$phrase_facts = {
+			'Provided value'=> $pepper->{params}{provided_phrase},
+			'Value length' => length( $pepper->{params}{provided_phrase} ),
+			'Last three characters' => substr($pepper->{params}{provided_phrase}, -3, 3),
+			'Form submited' => $pepper->time_to_date(time(), 'to_date_human_time').' '.$pepper->{utils}->{time_zone_name}
+		};
+		
+		# if they checked the option to receive JSON back, return that data structure
+		# and Pepper.pm will convert it to JSON before sending out
+		return $phrase_facts if $pepper->{params}{return_json};
+	}
+	
+	# if they didn't check the return-JSON option, we will prepare some HTML via
+	# our basic Template Toolkit template.  Please check out /opt/pepper/templates/system/html_example.tt
+	return $pepper->template_process({
+		'template_file' => 'system/html_example.tt',
+		'template_vars' => {
+			'provided_phrase' => $pepper->{params}{provided_phrase},
+			'phrase_facts' => $phrase_facts,
+		},
+	});
+
+	# all through, all done
+}
+
+1;];
+
+	}
 }
 
 # return the template for our PSGI handler script

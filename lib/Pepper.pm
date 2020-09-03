@@ -76,10 +76,8 @@ sub execute_handler {
 	unless (eval "require $endpoint_handler_module") { # Error out if this won't import
 		$self->send_response("Could not import $endpoint_handler_module: ".$@,1);
 	}
-	eval qq{$endpoint_handler_module->import};
-	
 	# execute the request endpoint handler; this is not OO for the sake of simplicity
-	my $response_content = endpoint_handler( $self );
+	my $response_content = $endpoint_handler_module->endpoint_handler( $self );
 
 	# always commit to the database 
 	if ($self->{config}{use_database} eq 'Y') {
@@ -171,11 +169,11 @@ __END__
 Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
-- sample endpoint with HTML form and optional JSON output
+x Make sample endpoints go into PepperApps
+x sample endpoint with HTML form and optional JSON output
 - sample script
-x delete endpoints
-x systemd service file
-x Apache config
+- option to hide error messages
+- test-endpoint
 - Proofread Documentation
 - Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
