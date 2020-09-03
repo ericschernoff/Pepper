@@ -1,16 +1,16 @@
 use strict;
-use Test::More tests => 8;
+use Test::More tests => 11;
 
 use_ok $_ for qw(
 	Pepper
 );
 
-# make sure Pepper::Utilities works
+# make sure all the subordinate packages work too
+foreach my $lib ('PlackHandler','DB','Utilities','Commander','Templates') {
+	require_ok 'Pepper::'.$lib;
+}
 
-use_ok $_ for qw(
-	Pepper::Utilities
-);
-
+# double-test utilities
 my $pepper_utils = Pepper::Utilities->new({
 	'skip_db' => 1,
 	'skip_config' => 1,
@@ -27,9 +27,6 @@ my $opt_is_there = 0;
 ok($opt_is_there, '/opt exists');
 
 # let's test template_process() and time_to_date() in one action
-use_ok $_ for qw(
-	Pepper::Templates
-);
 my $pepper_templates = Pepper::Templates->new();
 my $test_template = $pepper_templates->get_template('test_template');
 my $test_output = $pepper_utils->template_process({

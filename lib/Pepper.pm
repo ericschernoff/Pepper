@@ -173,7 +173,6 @@ x Make sample endpoints go into PepperApps
 x sample endpoint with HTML form and optional JSON output
 - sample script
 - option to hide error messages
-- Tests: all libraries
 - Setup fixes:
 	- check the database connection in real time
 	- allow for blank default endpoint

@@ -9,7 +9,6 @@ x sample endpoint with HTML form and optional JSON output
 \- option to hide error messages
 \- Tests: all libraries
 \- Setup fixes:
-	- only need sudo for setup?
 	- check the database connection in real time
 	- allow for blank default endpoint
 	- Error sysopen on '/opt/pepper/code/PepperApps/HTMLExample.pm210601524161479': No such file or directory at /usr/local/share/perl/5.30.0/Pepper/Utilities.pm line 369.
@@ -40,7 +39,7 @@ and use [DBD:Pg](DBD:Pg) instead of Pepper::DB.
     To set up a new web service:
 
     # sudo pepper setup
-    # sudo pepper set-endpoint /dogs/daisy PepperApps::Dogs::Daisy
+    # pepper set-endpoint /dogs/daisy PepperApps::Dogs::Daisy
     
     A new Perl module is created at /opt/pepper/code/PepperApps/Dogs.Daisy.pm.
     Edit that module to have it perform any actions and return any content you prefer.  
@@ -79,12 +78,12 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 5\. Open up /opt/pepper/code/PepperExample.pm and read the comments to see how easy it
 	is to code up web endpoints.
 
-6\. Start the Plack service:  sudo pepper start
+6\. Start the Plack service:  pepper start
 	Then check out the results of PepperExample.pm here: https://127.0.0.1:5000 
 	You should receive basic JSON results.  Modify PepperExample.pm to tweak those results
-	and then restart the Plack service to test your changes:  sudo pepper restart
+	and then restart the Plack service to test your changes:  pepper restart
 	Any errors will be logged to /opt/pepper/log/fatals-YYYY-MM-DD.log (replacing YYYY-MM-DD).
-	In a dev environment, you can auto-restart, see 'sudo pepper help'
+	In a dev environment, you can auto-restart, see 'pepper help'
 
 7\. If you would like to write command-line Perl scripts, you can skip step #6 and just
 	start your script like this:
@@ -101,12 +100,12 @@ the 'Functions' menu and 'Tutorials' under the 'Manuals' menu.
 
 Adding a new endpoint is just as easy as:
 
-        # sudo pepper set-endpoint /Some/URI PerlModuleDirectory::PerlModule
+        # pepper set-endpoint /Some/URI PerlModuleDirectory::PerlModule
         
 
 For example:
 
-        # sudo pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::WeaverStreet
+        # pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::WeaverStreet
         
 
 That will map any request to your /Carrboro/WeaverStreet URI to the endpoint\_handler()
@@ -115,16 +114,16 @@ of that file will be created for you.  Simply edit and test the file to power th
 
 If you wish to change the endpoint to another module, just re-issue the command:
 
-        # sudo pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::AnotherWeaverStreet
+        # pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::AnotherWeaverStreet
 
 You can see your current endpoints via list-endpoints
 
-        # sudo pepper list-endpoints
+        # pepper list-endpoints
         
 
 To deactivate an endpoint, you can set it to the default:
 
-        # sudo pepper set-endpoint /Carrboro/WeaverStreet default
+        # pepper set-endpoint /Carrboro/WeaverStreet default
 
 # BASICS OF AN ENDPOINT HANDLER
 
@@ -743,10 +742,10 @@ Eric Chernoff - ericschernoff at gmail.com
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 354:
+- Around line 353:
 
     You forgot a '=back' before '=head2'
 
-- Around line 712:
+- Around line 711:
 
     Deleting unknown formatting code U<>
