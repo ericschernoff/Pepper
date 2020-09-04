@@ -3,7 +3,6 @@
 Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
-\- sample script
 \- Proofread Documentation
 \- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
@@ -50,7 +49,7 @@ and use [DBD:Pg](DBD:Pg) instead of Pepper::DB.
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1\. Install the needed packages
-	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
+	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2
 	CentOS 8: yum install 
 	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
 
@@ -81,6 +80,8 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
                 use Pepper;
                 my $pepper = Pepper->new();
+                
+        The setup command places a simple example script at /opt/pepper/template/system/example_perl_script.pl
 
 The $pepper object will have all the methods and variables described below.
 
@@ -230,7 +231,7 @@ will be '/All/Hail/Ginger'.
 
 The plain request and response Plack objects will be available at $pepper->{plack\_handler}->{request}
 and $pepper->{plack\_handler}->{response} respectively.  Please only use these if you absolutely must,
-and please see [Plack::Request](https://metacpan.org/pod/Plack%3A%3ARequest) and [Plack::Response](https://metacpan.org/pod/Plack%3A%3AResponse) before working with these.
+and please see [Plack::Request](https://metacpan.org/pod/Plack::Request) and [Plack::Response](https://metacpan.org/pod/Plack::Response) before working with these.
 
 # RESPONSE / LOGGING / TEMPLATE METHODS PROVIDED BY THE $pepper OBJECT
 
@@ -461,7 +462,7 @@ If a request fails due, commit() is not called and the changes will be rolled-ba
 
 # JSON METHODS PROVIDED BY THE $pepper OBJECT
 
-These methods provide default/basic functions of the excellent [Cpanel::JSON::XS](https://metacpan.org/pod/Cpanel%3A%3AJSON%3A%3AXS) library.
+These methods provide default/basic functions of the excellent [Cpanel::JSON::XS](https://metacpan.org/pod/Cpanel::JSON::XS) library.
 
 ## json\_from\_perl
 
@@ -733,10 +734,10 @@ Eric Chernoff - ericschernoff at gmail.com
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 344:
+- Around line 345:
 
     You forgot a '=back' before '=head2'
 
-- Around line 702:
+- Around line 703:
 
     Deleting unknown formatting code U<>

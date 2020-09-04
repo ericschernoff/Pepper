@@ -215,7 +215,7 @@ and use L<DBD:Pg> instead of Pepper::DB.
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1. Install the needed packages
-	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev 
+	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2
 	CentOS 8: yum install 
 	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
 	

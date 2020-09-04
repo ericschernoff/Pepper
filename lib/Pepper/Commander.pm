@@ -263,8 +263,11 @@ sub setup_and_configure {
 		my $dest_dir = 'template/system'; # everything by the PSGI script goes in 'template'
 			$dest_dir = 'lib' if $t_file eq 'pepper.psgi';
 		my $dest_file = '/opt/pepper/'.$dest_dir.'/'.$t_file;
+
+		# skip if already in place
+		next if -e $dest_file;
 		
-		# save teh template new file
+		# save the new template file
 		my $template_method = $$template_files{$t_file};
 		my $contents = $pepper_templates->$template_method();
 		
@@ -282,9 +285,10 @@ sub setup_and_configure {
 	my $html_example_handler = '/opt/pepper/code/PepperApps/HTMLExample.pm';
 	if (!(-e "$html_example_handler")) {
 		mkdir( '/opt/pepper/code/PepperApps');
+		$self->set_endpoint('/pepper/html_example','/pepper/html_example','PepperApps::HTMLExample');
+		# make it second, so nothing will be said on first go-round
 		my $html_example_code = $pepper_templates->html_example_endpoint('perl');
 		$utils->filer($html_example_handler,'write',$html_example_code);
-		$self->set_endpoint('/pepper/html_example','/pepper/html_example','PepperApps::HTMLExample');
 	}
 
 	# the system user owns the directory tree
@@ -564,7 +568,7 @@ sub plack_controller {
 
 		my $max_workers = $args[1] || 10;
 
-		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| /usr/bin/rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
 	
 	} elsif ($args[0] eq 'stop') {
 		
