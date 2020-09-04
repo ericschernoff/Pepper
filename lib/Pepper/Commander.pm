@@ -255,6 +255,7 @@ sub setup_and_configure {
 		'pepper.psgi' => 'psgi_script',
 		'pepper_apache.conf' => 'apache_config',
 		'pepper.service' => 'systemd_config',
+		'example_perl_script.pl' => 'sample_script',
 	};
 	my $pepper_templates = Pepper::Templates->new();
 

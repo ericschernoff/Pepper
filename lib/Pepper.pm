@@ -169,8 +169,6 @@ __END__
 Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
-- sample script
-- test-endpoint
 - Proofread Documentation
 - Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
@@ -248,6 +246,8 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 	
 		use Pepper;
 		my $pepper = Pepper->new();
+		
+	The setup command places a simple example script at /opt/pepper/template/system/example_perl_script.pl
 
 The $pepper object will have all the methods and variables described below.
 

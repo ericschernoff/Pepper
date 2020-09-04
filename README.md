@@ -4,7 +4,6 @@ Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
 \- sample script
-\- test-endpoint
 \- Proofread Documentation
 \- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
@@ -734,10 +733,10 @@ Eric Chernoff - ericschernoff at gmail.com
 
 Hey! **The above document had some coding errors, which are explained below:**
 
-- Around line 345:
+- Around line 344:
 
     You forgot a '=back' before '=head2'
 
-- Around line 703:
+- Around line 702:
 
     Deleting unknown formatting code U<>

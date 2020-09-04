@@ -401,6 +401,47 @@ sub apache_config {
 </VirtualHost>};
 }
 
+# sample Pepper script
+sub sample_script {
+	my $self = shift;
+	
+	return q[#!env perl
+# sample perl script working with Pepper
+
+# boilerplate
+use strict;
+use warnings;
+use v5.26;
+
+# bring in pepper
+use Pepper;
+	my $pepper = Pepper->new();
+
+# simple date trick
+my $current_day_nice = $pepper->time_to_date( time(), 'to_date_human_dayname' );
+say "Today is $current_day_nice";
+
+# if they have a database object, do some more tricks
+if ($pepper->{db}) {
+	
+	# not a great example SQL, but here we go...
+	my ($databases, $dbkeys) = $pepper->sql_hash(qq{
+		select TABLE_NAME, TABLE_ROWS from information_schema.TABLES 
+		where TABLE_TYPE='BASE TABLE'
+	});
+	
+	# output the results as JSON
+	say "Database table info in JSON:";
+	say $pepper->json_from_perl( $databases );
+	
+}
+
+# if we were making changes to the database, we'd want 
+# to end with $pepper->commit(); to commit that DB transaction
+# done	
+exit;];
+	
+}
 
 1;
 
