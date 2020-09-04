@@ -64,11 +64,11 @@ sub connect_to_database {
 	# can support Mysql/MariaDB
 	$dsn = 'DBI:mysql:database='.$self->{current_database}.';host='.$self->{database_server}.';port=3306';
 	$self->{dbh} = DBI->connect($dsn, $self->{config}{database_username}, $self->{config}{database_password},{ 
-		PrintError => 1, 
+		PrintError => 0, 
 		RaiseError => 1, 
 		AutoCommit => 0,
 		mysql_enable_utf8 => 8
-	}) or $self->log_errors('Cannot connect to '.$self->{database_server});
+	}) or $self->log_errors('Cannot connect to '.$self->{database_server}.': '.$DBI::errstr);
 
 	# let's automatically reconnect if the connection is timed out
 	$self->{dbh}->{mysql_auto_reconnect} = 1;

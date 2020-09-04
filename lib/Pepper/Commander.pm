@@ -145,27 +145,31 @@ sub test_db {
 		});
 	};
 	
+	my $result_message = '';
+	my $current_timestamp = '';
 	if ($@) {
-		print "\nCould not connect to the database.\nError Msg: $@";
-		print "\nPlease confirm config and re-run 'pepper setup' as needed.\n\n";
+		$result_message = "\n\nCOULD NOT CONNECT TO THE DATABASE.\nERROR MESSAGE: $@";
+		$result_message .= "\nPlease confirm config and re-run 'sudo pepper setup' as needed.\n\n";
+	
+	# connected / test querying
+	} else {
+		($current_timestamp) = $db->quick_select('select current_timestamp');
+	
 	}
 	
-	# this should work on our three supported DB's
-	my ($current_timestamp) = $db->quick_select('select current_timestamp');
-	
-	my $result_message;
+	# if the query succeeded...
 	if ($current_timestamp =~ /^\d{4}\-\d{2}\-\d{2}\s/) {
 		$result_message = "\nYour database connection appears to be working.\n\n";
-		
-	} else {
-		$result_message = "\nCould not query the database.\nError Msg: $@".
-							"\nPlease confirm config and re-run 'sudo pepper setup' as needed.\n\n";
 	
+	# if it did not and there is no connection error...
+	} elsif (!$result_message) {
+		$result_message = "\n\nCOULD NOT QUERY THE DATABASE.\nERROR MESSAGE: $@".
+							"\nPlease confirm config and re-run 'sudo pepper setup' as needed.\n\n";
 	}
 
 	# if we are in setup mode, we will exit here; otherwise, we just print
 	print $result_message;
-	if ($mode eq 'setup' && $result_message =~ /Error/) {
+	if ($mode eq 'setup' && $result_message =~ /ERROR/) {
 		exit;
 	}
 
@@ -196,11 +200,9 @@ sub setup_and_configure {
 		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
-		['url_mappings_database', 'Database to store URL/endpoint mappings.  User above must be able to create.  Leave blank to use JSON config file.'],
-		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperApps::SomeModule) Leave blank for example module.'],
+		['url_mappings_database', 'Database to store URL/endpoint mappings.  Blank for JSON config file.'],
+		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperApps::SomeModule). Blank for example module.'],
 	];
-	
-	$$config{default_endpoint_module} ||= 'PepperApps::PepperExample';
 	
 	# does a configuration already exist?
 	if (-e $utils->{config_file}) {
@@ -223,13 +225,16 @@ sub setup_and_configure {
 	} else {
 		$$config{url_mappings_file} = '/opt/pepper/config/pepper_endpoints.json';
 	}
+
+	# default endpoint handler
+	$$config{default_endpoint_module} ||= 'PepperApps::PepperExample';
 	
-	# now write the file
+	# now write the config file
 	$utils->write_system_configuration($config);
 	
 	# if they want to connect to a database, let's test that now
 	if ($$config{use_database} eq 'Y') {
-		$self->test_db();
+		$self->test_db('setup');
 	}
 
 	# install some needed templates
@@ -258,7 +263,7 @@ sub setup_and_configure {
 		$utils->filer($dest_file,'write',$contents);
 	}
 
-	# set the default example endpoint
+	# set the default example endpoint; hopefully the example module
 	$self->set_endpoint('default','default',$$config{default_endpoint_module});
 
 	# if the HTML endpoint example isn't already there, add it in
