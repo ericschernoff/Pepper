@@ -17,6 +17,11 @@ use Pepper;
 use Pepper::DB;
 use Pepper::Templates;
 
+# for test-endpoint
+use Plack::Test;
+use Plack::Util;
+use HTTP::Request::Common;
+
 # create myself and try to grab arguments
 sub new {
 	my ($class) = @_;
@@ -44,6 +49,7 @@ sub run {
 		'list-endpoints' => 'list_endpoints',
 		'delete-endpoint' => 'delete_endpoint',
 		'test-db' => 'test_db',
+		'test-endpoint' => 'test_endpoint',
 		'start' => 'plack_controller',
 		'stop' => 'plack_controller',
 		'restart' => 'plack_controller',
@@ -52,7 +58,7 @@ sub run {
 	# have to be one of these
 	if (!$args[0] || !$$dispatch{$args[0]}) {
 
-		die "Usage: pepper help|setup|set-endpoint|delete-endpoint|list-endpoints|test-db|start|stop|restart\n('setup' must be run via sudo/root.)\n";
+		die "Usage: pepper help|setup|set-endpoint|delete-endpoint|list-endpoints|test-db|test-endpoint|start|stop|restart\n('setup' must be run via sudo/root.)\n";
 		
 	# can not do anything without a config file
 	} elsif ($args[0] ne 'setup' && !(-e $self->{pepper}->{utils}->{config_file})) {
@@ -104,6 +110,11 @@ If the Perl module does not exist under /opt/pepper/code, an initial version wil
 # pepper list-endpoints
 
 This will output your configured endpoint mappings.
+
+# pepper test-endpoint [URI]
+
+This will run Plack::Test against the URI's endpoint to see that it will return 200 OK.
+This is not a test of functionality, just a test that the endpoint executes and returns 200.
 
 # pepper delete-endpoint [URI]
 
@@ -200,8 +211,8 @@ sub setup_and_configure {
 		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
 		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
 		['connect_to_database', 'Default connect-to database','information_schema'],
-		['url_mappings_database', 'Database to store URL/endpoint mappings.  Blank for JSON config file.'],
-		['default_endpoint_module', 'Default endpoint-handler Perl module (i.e. PepperApps::SomeModule). Blank for example module.'],
+		['url_mappings_database', 'Database to store URL/endpoint mappings.  Leave blank for JSON config file.'],
+		['default_endpoint_module', 'Default endpoint-handler Perl module. Leave blank for example module.'],
 	];
 	
 	# does a configuration already exist?
@@ -454,6 +465,41 @@ sub list_endpoints {
 	return;
 }
 
+# method to test an endpoint
+sub test_endpoint {
+	my ($self,@args) = @_;
+	
+	# due to how the command works, it should be in the second one
+	my $endpoint_data = {};
+	my $endpoint_uri;
+	if (!$args[1]) { # prompt the user for input
+	
+		$endpoint_data = $self->prompt_user([
+			['endpoint_uri','URI for endpoint to test, such as /hello/world (required)'],
+		]);	
+		
+		$endpoint_uri = $$endpoint_data{endpoint_uri};
+		
+	} else { # otherwise, they provided it
+		$endpoint_uri = $args[1];
+
+	}
+
+	# return the test
+	print "\nTesting $endpoint_uri...\n";
+	my $app = Plack::Util::load_psgi '/opt/pepper/lib/pepper.psgi';
+	my $test = Plack::Test->create($app);
+	my $res = $test->request(GET $endpoint_uri);
+	
+	# provide the results
+	if ($res->status_line eq '200 OK' ) {
+		print "Success: Endpoint returns 200 OK\n";
+	} else {
+		print "Error: Endpoint returns 500 Internal Server Error.  Check fatal log under /opt/pepper/log\n";
+	}
+
+}
+
 # method to intercept prompts
 sub prompt_user {
 	my ($self,$prompts_map) = @_;
@@ -568,6 +614,11 @@ If the Perl module does not exist under /opt/pepper/code, an initial version wil
 =head2 pepper list-endpoints
 
 This will output your configured endpoint mappings.
+
+=head2 pepper test-endpoint [URI]
+
+This will run Plack::Test against the URI's endpoint to see that it will return 200 OK.
+This is not a test of functionality, just a test that the endpoint executes and returns 200.
 
 =head2 pepper delete-endpoint [URI]
 

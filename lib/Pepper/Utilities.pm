@@ -56,6 +56,7 @@ sub send_response {
 	
 	my ($access_message, $error_id, $access_error, $die_text, $display_error_message, $html_generator, $error_html);
 	
+	$stop_here ||= 0; # don't want an uninitiated value
 	if ($stop_here == 1 || $stop_here == 3) { # if $stop_here is a 1 or 3, we are stopping due to an error condition
 		# if it is plain text, we should most likely log the error message sent to us
 		# and just present the error ID
@@ -67,9 +68,11 @@ sub send_response {
 
 		if (length($content)) { 
 			$error_id = $self->logger($content,'fatals'); # 'these errors go into the 'fatals' log
+			# send an accurate response code
+			$self->{response}->status(500);
 
 			# unless we are on the dev server or it's the no-app message, present the error ID instead
-			if ($self->{config}{development_server} || $content =~ /^No application exists/) {
+			if ($self->{config}{development_server} eq 'Y' || $content =~ /^No application exists/) {
 				$display_error_message = $content;
 				# need period at the end
 				$display_error_message .= '.' if $display_error_message !~ /(\.|\?|\!)$/;
@@ -88,8 +91,6 @@ sub send_response {
 				};
 				# developers see the actual message
 				$$content{display_error_message} = $display_error_message if $display_error_message;
-				# make sure to send good HTTP codes to the API client
-				$self->{response}->status(500);
 
 			# if we are in Web UI mode, pipe it out to the user as HTML;
 			} elsif ($self->{request}) {

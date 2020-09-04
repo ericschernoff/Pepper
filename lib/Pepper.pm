@@ -167,10 +167,9 @@ __END__
 =head1 NAME
 
 Pepper - Quick-start kit for creating microservices in Perl.
-imissher
+
 FINAL STEPS:
 - sample script
-- option to hide error messages
 - test-endpoint
 - Proofread Documentation
 - Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
