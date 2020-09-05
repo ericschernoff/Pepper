@@ -1,3 +1,1 @@
-apt install git build-essential cpanminus perl-doc libmysqlclient-dev 
-apt install mysql-server apache2 zlib1g-dev libssl-dev libapache2-mod-security2 certbot
-a2enmod proxy ssl headers proxy_http rewrite
+Please see 'INSTALLATION / GETTTING STARTED' section in the POD

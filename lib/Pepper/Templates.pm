@@ -105,6 +105,11 @@ sub html_example_endpoint {
 </head>
 <body>
 
+[% IF pepper_cookie %]
+	<h3>I Found a Cookie</h3>
+	Cookie value: [% pepper_cookie %]
+[% END %]
+
 [% IF provided_phrase %]
 	<h3>Results of Form</h3>
 	<ul>
@@ -131,6 +136,13 @@ sub html_example_endpoint {
 <br/><input type="text" size="40" name="provided_phrase" value="[%provided_phrase%]"/>
 <br/><br/>
 
+<strong>Demo Setting a Cookie:</strong>
+<br/><input type="checkbox" name="set_demo_cookie" value="yes"/>&nbsp;Click to have Pepper set a cookie with a random string.
+<br/>Close the browser and return to see that the cookie persists.
+<br/>Submitting with this check will overwrite the previous cookie.
+<br/><br/>
+
+
 <strong>Return JSON:</strong>
 <br/><input type="checkbox" name="return_json" value="yes"/>&nbsp;Click to have the response be JSON instead of HTML.
 <br/>Leave un-checked to compare the results with the content of the template.
@@ -141,8 +153,7 @@ sub html_example_endpoint {
 </form>
 
 </body>
-</html>		
-		];
+</html>];
 	# otherwise, send out the perl module
 	} else {
 	
@@ -174,6 +185,20 @@ sub endpoint_handler {
 		return $phrase_facts if $pepper->{params}{return_json};
 	}
 	
+	# set the demo cookie?
+	my $pepper_cookie;
+	if ($pepper->{params}{set_demo_cookie}) {
+		$pepper_cookie = $pepper->random_string(20); # so we can display in the page
+		$pepper->set_cookie({
+			'name' => 'Pepper_Demo_Cookie', # could be any name
+			'value' => $pepper_cookie, # could be any string; nice to encrypt
+		}); 
+		
+	# even if we aren't setting it, let's show it to the nice people
+	} else {
+		$pepper_cookie = $pepper->{cookies}{Pepper_Demo_Cookie};
+	}
+	
 	# if they didn't check the return-JSON option, we will prepare some HTML via
 	# our basic Template Toolkit template.  Please check out /opt/pepper/templates/system/html_example.tt
 	return $pepper->template_process({
@@ -181,6 +206,7 @@ sub endpoint_handler {
 		'template_vars' => {
 			'provided_phrase' => $pepper->{params}{provided_phrase},
 			'phrase_facts' => $phrase_facts,
+			'pepper_cookie' => $pepper_cookie,
 		},
 	});
 

@@ -104,9 +104,13 @@ sub set_cookie {
 	# days to live is important; default to 10 days
 	$$cookie_details{days_to_live} ||= 10;
 
+	# cookie domain won't work with port numbers at the end
+	my $cookie_host = $self->{request}->env->{HTTP_HOST};
+	$cookie_host =~ s/\:\d+$//;
+
 	$self->{response}->cookies->{ $$cookie_details{name} } = {
 		value => $$cookie_details{value},
-		domain  =>  $self->{request}->env->{HTTP_HOST},
+		domain  => $cookie_host,
 		path => '/',
 		expires => time() + ($$cookie_details{days_to_live} * 86400)
 	};	

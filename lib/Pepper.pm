@@ -169,8 +169,8 @@ __END__
 Pepper - Quick-start kit for creating microservices in Perl.
 
 FINAL STEPS:
+- Test FreeBSD
 - Proofread Documentation
-- Test on Ubuntu 18, Ubuntu 20, CentOS, FreeBSD
 
 =head1 DESCRIPTION / PURPOSE
 
@@ -215,7 +215,7 @@ and use L<DBD:Pg> instead of Pepper::DB.
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1. Install the needed packages
-	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2
+	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
 	CentOS 8: yum install git perl perldoc perl-devel httpd  cc mysql mariadb-connector-c mariadb-devel 
 	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
 	
@@ -853,6 +853,7 @@ A sample pepper_apache.conf file will be saved under /opt/pepper/template/system
 after you run 'sudo pepper setup'. Use this file as a basis for adding a virtual
 host configuration under /etc/apache2/conf-enabled .  Several comments have been
 added with friendly suggestions.  You will want to enable several Apahce modules:
+
 	a2enmod proxy ssl headers proxy_http rewrite
 
 Nginx is a great web server preferred by many smart people. I prefer Apache 
