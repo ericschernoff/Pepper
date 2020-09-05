@@ -216,7 +216,7 @@ This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
 1. Install the needed packages
 	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2
-	CentOS 8: yum install 
+	CentOS 8: yum install git perl perldoc perl-devel httpd  cc mysql mariadb-connector-c mariadb-devel 
 	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
 	
 2. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
