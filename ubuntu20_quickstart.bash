@@ -3,7 +3,7 @@
 
 echo "Installing the needed system packages"
 
-sudo apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
+sudo apt -y install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
 
 echo "Installing Pepper"
 
