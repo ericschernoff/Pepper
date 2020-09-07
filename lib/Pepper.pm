@@ -1,6 +1,6 @@
 package Pepper;
 
-$Pepper::VERSION = '1.0';
+$Pepper::VERSION = '1.0.1';
 
 use Pepper::DB;
 use Pepper::PlackHandler;
@@ -762,8 +762,6 @@ The epochs are best for functions that will include the time.
 You can set your own default via the PERL_DATETIME_DEFAULT_TZ environmental variable or placing 
 in $pepper->{utils}->{time_zone_name}.  Most of examples below take the default time zone, which is
 UTC. B<Be sure to set the time zone if you need local times.>
-
-=back
 
 To get the epoch of 00:00:00 on a particular date:
 
