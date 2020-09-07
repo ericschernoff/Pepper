@@ -1,7 +1,7 @@
 {
    "abstract" : "Quick-start kit for learning and creating microservices in Perl.",
    "author" : [
-      "Eric Chernoff - ericschernoff at gmail.com "
+      "Eric Chernoff <eric@weaverstreet.net>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v3.1.9, CPAN::Meta::Converter version 2.150010",
@@ -88,7 +88,6 @@
    "version" : "1.0",
    "x_contributors" : [
       "Eric Chernoff <eric@pepper.weaverstreet.net>",
-      "Eric Chernoff <eric@weaverstreet.net>",
       "Eric Chernoff <ericschernoff@gmail.com>",
       "root <root@majestica-dev.weaverstreet.net>",
       "root <root@pepper.weaverstreet.net>"
