@@ -95,7 +95,7 @@ sub html_example_endpoint {
 	# we have two parts to this: a TT template and a endpoint handler module
 	if (!$send_handler) {
 		return q[[%# This template is used for the /pepper/html_example example endpoint.  
-	Please see /opt/pepper/code/PepperApps/HTMLExample.pm %]
+	Please see /opt/pepper/lib/PepperApps/HTMLExample.pm %]
 	
 <!DOCTYPE html>
 <html>

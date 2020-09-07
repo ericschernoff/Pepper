@@ -105,7 +105,7 @@ requests.  The first argument is a URI and the second is a target Perl module fo
 handing GET/POST requests to the URI.  If these two arguments are not given, you
 will be prompted for the information.  
 
-If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
+If the Perl module does not exist under /opt/pepper/lib, an initial version will be created.
 
 # pepper list-endpoints
 
@@ -195,7 +195,7 @@ sub setup_and_configure {
 	if (!(-d '/opt/pepper')) {
 		mkdir ('/opt/pepper');
 	}
-	foreach $subdir ('code','config','lib','log','template','template/system') {
+	foreach $subdir ('lib','config','psgi','log','template','template/system') {
 		$subdir_full = '/opt/pepper/'.$subdir;
 		mkdir ($subdir_full) if !(-d $subdir_full);
 	}
@@ -261,7 +261,7 @@ sub setup_and_configure {
 
 	foreach my $t_file (keys %$template_files) {
 		my $dest_dir = 'template/system'; # everything by the PSGI script goes in 'template'
-			$dest_dir = 'lib' if $t_file eq 'pepper.psgi';
+			$dest_dir = 'psgi' if $t_file eq 'pepper.psgi';
 		my $dest_file = '/opt/pepper/'.$dest_dir.'/'.$t_file;
 
 		# skip if already in place
@@ -282,9 +282,9 @@ sub setup_and_configure {
 	$self->set_endpoint('default','default',$$config{default_endpoint_module});
 
 	# if the HTML endpoint example isn't already there, add it in
-	my $html_example_handler = '/opt/pepper/code/PepperApps/HTMLExample.pm';
+	my $html_example_handler = '/opt/pepper/lib/PepperApps/HTMLExample.pm';
 	if (!(-e "$html_example_handler")) {
-		mkdir( '/opt/pepper/code/PepperApps');
+		mkdir( '/opt/pepper/lib/PepperApps');
 		$self->set_endpoint('/pepper/html_example','/pepper/html_example','PepperApps::HTMLExample');
 		# make it second, so nothing will be said on first go-round
 		my $html_example_code = $pepper_templates->html_example_endpoint('perl');
@@ -343,7 +343,7 @@ sub set_endpoint {
 	my (@module_path, $directory_path, $part);
 	(@module_path) = split /\:\:/, $$endpoint_data{endpoint_handler};
 	if ($module_path[1]) {
-		$directory_path = '/opt/pepper/code';
+		$directory_path = '/opt/pepper/lib';
 		foreach $part (@module_path) {
 			if ($part ne $module_path[-1]) {
 				$directory_path .= '/'.$part;
@@ -356,7 +356,7 @@ sub set_endpoint {
 	}
 	
 	($module_file = $$endpoint_data{endpoint_handler}) =~ s/\:\:/\//g;
-	$module_file = '/opt/pepper/code/'.$module_file.'.pm';
+	$module_file = '/opt/pepper/lib/'.$module_file.'.pm';
 	if (!(-e $module_file)) { # start the handler
 		$utils->template_process({
 			'template_file' => 'system/endpoint_handler.tt',
@@ -492,7 +492,7 @@ sub test_endpoint {
 
 	# return the test
 	print "\nTesting $endpoint_uri...\n";
-	my $app = Plack::Util::load_psgi '/opt/pepper/lib/pepper.psgi';
+	my $app = Plack::Util::load_psgi '/opt/pepper/psgi/pepper.psgi';
 	my $test = Plack::Test->create($app);
 	my $res = $test->request(GET $endpoint_uri);
 	
@@ -562,13 +562,13 @@ sub plack_controller {
 	my $pid_file = '/opt/pepper/log/pepper.pid';
 	
 	my $dev_reload = '';
-		$dev_reload = '-R /opt/pepper/code' if $args[2];
+		$dev_reload = '-R /opt/pepper/lib' if $args[2];
 		
 	if ($args[0] eq 'start') {
 
 		my $max_workers = $args[1] || 10;
 
-		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/lib --log-file="| rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/psgi --log-file="| rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
 	
 	} elsif ($args[0] eq 'stop') {
 		
@@ -614,7 +614,7 @@ handing GET/POST requests to the URI.  If these two arguments are not given, you
 will be prompted for the information.  Use 'default' for the URI to set a default
 endpoint handler.
 
-If the Perl module does not exist under /opt/pepper/code, an initial version will be created.
+If the Perl module does not exist under /opt/pepper/lib, an initial version will be created.
 
 =head2 pepper list-endpoints
 

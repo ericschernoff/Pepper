@@ -1,5 +1,6 @@
-#!/bin/bash
-# Bash script to quickly install, set up, and start Pepper
+#!/bin/sh
+# Shell script to quickly install, set up, and start Pepper
+# should be able to run: curl https://raw.githubusercontent.com/ericschernoff/Pepper/ginger/ubuntu20_quickstart.sh | sh
 
 echo "Installing the needed system packages"
 
