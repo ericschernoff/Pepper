@@ -241,6 +241,9 @@ nano -w /usr/local/etc/sudoers --> Add line: YOUR_USERNAME	ALL=(ALL) ALL
 
 =head2. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
 user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
+B<Note:> Use the 'mysql_native_password' plugin when creating your database users, as in:
+
+	create user pepper@'127.0.0.1' identified with mysql_native_password by 'MySecurePassword!';
 	
 =head2 Install Pepper:  
 
