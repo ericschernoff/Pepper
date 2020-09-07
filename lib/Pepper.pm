@@ -530,7 +530,7 @@ Use to get results for SQL SELECT's that will return one row of results.
 The required first argument is the SELECT statement, and the optional 
 second argument is an array reference of values for the placeholders.
 
-	($birth_date, $adopt_date) = $pepper->quick_select(qq{
+	my ($birth_date, $adopt_date) = $pepper->quick_select(qq{
 		select birth_date, adoption_date from family.dogs
 		where name=? and breed=? limit 1
 	}, [ 'Daisy', 'Shih Tzu' ] );
@@ -545,7 +545,7 @@ the second-level keys are either the other column names or the keys you
 provide.  Returns references to the results hash and the array of
 the first level keys.
 
-	($results, $result_keys) = $pepper->sql_hash(qq{
+	my ($results, $result_keys) = $pepper->sql_hash(qq{
 		select id, name, birth_date from my_family.family_members
 		where member_type=? order by name
 	}, [ 'Dog'] );
@@ -577,7 +577,7 @@ You now have:
 
 Using alternative keys:
 
-	($results, $result_keys) = $pepper->sql_hash(qq{
+	my ($results, $result_keys) = $pepper->sql_hash(qq{
 		select id, name, date_format(birth_date,'%Y') from my_family.family_members
 		where member_type=? order by name
 	},[ 'Dog' ], [ 'name','birth_year' ] );
@@ -599,7 +599,7 @@ Useful for SELECT statements which return multiple results with one column each.
 The required first argument is the SELECT statement to run. The optional second 
 argument is a reference to an array of values for the placeholders (recommended).
 
-	$list = $pepper->list_select(
+	my $list = $pepper->list_select(
 		'select name from my_family.family_members where member_type=?,
 		['Dog']
 	);
@@ -612,7 +612,7 @@ argument is a reference to an array of values for the placeholders (recommended)
 Provides the same functionality as list_select() but returns a scalar containing
 a comma-separated list of the values found by the SELECT statement.
 
-	$text_list = $pepper->comma_list_select(
+	my $text_list = $pepper->comma_list_select(
 		"select name from my_family.family_members where member_type=?",
 		['Dog']
 	);
@@ -647,10 +647,11 @@ of values for placeholders.
 
 For a SELECT statement, do_sql() returns a reference to an array of arrays of results.
 
-	$results = $pepper->do_sql(
+	my $results = $pepper->do_sql(
 		'select code,name from finances.properties where name=?',
 		['123 Any Street']
 	);
+	my ($code, $name);
 	while (($code,$name) = @{shift(@$results)}) {
 		print "$code == $name\n";
 	}
@@ -680,9 +681,9 @@ These methods provide default/basic functions of the excellent L<Cpanel::JSON::X
 
 Accepts a reference to a data structure and converts it to JSON text:
 
-	$json_string = $pepper->json_from_perl($hash_reference);
+	my $json_string = $pepper->json_from_perl($hash_reference);
 
-	$json_string = $pepper->json_from_perl(\%some_hash);
+	my $json_string = $pepper->json_from_perl(\%some_hash);
 
 	# in either case, $json_string now contains a JSON representation of the data structure
 
@@ -690,7 +691,7 @@ Accepts a reference to a data structure and converts it to JSON text:
 
 Accepts a scalar with a JSON string and converts it into a reference to a Perl data structure.
 
-	$data = $pepper->json_to_perl($json_text);
+	my $data = $pepper->json_to_perl($json_text);
 	
 	# now you have $$data{name} or other keys / layers to access like 
 	# any other Perl hashref
@@ -699,7 +700,7 @@ Accepts a scalar with a JSON string and converts it into a reference to a Perl d
 
 Similar to json_to_perl() but added convenience of retrieving the JSON string from a file:
 
-	$data = $pepper->read_json_file('path/to/data_file.json');
+	my $data = $pepper->read_json_file('path/to/data_file.json');
 
 =head2 write_json_file
 
@@ -717,7 +718,7 @@ This is a basic interface for reading, writing, and appending files using the Pa
 
 To load the contents of a file into a scalar (aka 'slurp'):
 
-	$scalar_name = $pepper->filer('/path/to/file.ext');
+	my $file_contents = $pepper->filer('/path/to/file.ext');
 	
 To save the contents of a scalar into a file:
 
@@ -736,11 +737,11 @@ Handy method to generate a random string of numbers and uppercase letters.
 
 To create a 10-character random string:
 
-	$random_string = $pepper->random_string();
+	my $random_string = $pepper->random_string();
 	
 To specify that it be 25 characters long;
 
-	$longer_random_string = $pepper->random_string(25);
+	my $longer_random_string = $pepper->random_string(25);
 
 =head2 time_to_date
 
@@ -763,23 +764,23 @@ UTC. B<Be sure to set the time zone if you need local times.>
 
 To get the epoch of 00:00:00 on a particular date:
 
-	$epoch_value = $pepper->time_to_date('2002-04-12', 'to_unix_start');
+	my $epoch_value = $pepper->time_to_date('2002-04-12', 'to_unix_start');
 	# $epoch_value is now something like 1018569600
 
 To convert an epoch into a YYYY-MM-DD date:
 
-	$date = $pepper->time_to_date(1018569600, 'to_date_db');
+	my $date = $pepper->time_to_date(1018569600, 'to_date_db');
 	# $date is now something like '2002-04-12'
 	
 To convert a date or epoch to a more friendly format, such as April 12, 2002:
 
-	$peppers_birthday = $pepper->time_to_date('2002-04-12', 'to_date_human');
-	$peppers_birthday = $pepper->time_to_date(1018569600, 'to_date_human');
+	my $peppers_birthday = $pepper->time_to_date('2002-04-12', 'to_date_human');
+	my $peppers_birthday = $pepper->time_to_date(1018569600, 'to_date_human');
 	# for either case, $peppers_birthday is now 'April 12, 2002'
 	
 You can always use time() to get values for the current moment:
 
-	$todays_date_human = $pepper->time_to_date(time(), 'to_date_human');
+	my $todays_date_human = $pepper->time_to_date(time(), 'to_date_human');
 	# $todays_date_human is 'September 1' at the time of this writing
 
 'to_date_human' leaves off the year if the moment is within the last six months.
@@ -787,73 +788,73 @@ This can be useful for displaying a history log.
 
 Use 'to_date_human_full' to force the year to be included:
 
-	$todays_date_human = $pepper->time_to_date(time(), 'to_date_human_full');
+	my $todays_date_human = $pepper->time_to_date(time(), 'to_date_human_full');
 	# $todays_date_human is now 'September 1, 2020'
 	
 Use 'to_date_human_abbrev' to abbreviate the month name:
 
-	$nice_date_string = $pepper->time_to_date('2020-09-01', 'to_date_human_abbrev');
+	my $nice_date_string = $pepper->time_to_date('2020-09-01', 'to_date_human_abbrev');
 	# $nice_date_string is now 'Sept. 1, 2020'
 
 To include the weekday with 'to_date_human_abbrev' output:
 
-	$nicer_date_string = $pepper->time_to_date('2002-04-12', 'to_date_human_dayname');
+	my $nicer_date_string = $pepper->time_to_date('2002-04-12', 'to_date_human_dayname');
 	# $nicer_date_string is now 'Friday, Apr 12, 2002'
 
 To find just the year from a epoch:
 
-	$year = $pepper->time_to_date(time(), 'to_year');
+	my $year = $pepper->time_to_date(time(), 'to_year');
 	# $year is now '2020' (as of this writing)
 	
-	$year = $pepper->time_to_date(1018569600, 'to_year');
+	my $year = $pepper->time_to_date(1018569600, 'to_year');
 	# $year is now '2002'
 
 To convert an epoch to its Month/Year value:
 
-	$month_year = $pepper->time_to_date(1018569600, 'to_month');
+	my $month_year = $pepper->time_to_date(1018569600, 'to_month');
 	# $month_year is now 'April 2002'
 
 To convert an epoch to an abbreviated Month/Year value (useful for ID's):
 
-	$month_year = $pepper->time_to_date(1018569600, 'to_month_abbrev');
+	my $month_year = $pepper->time_to_date(1018569600, 'to_month_abbrev');
 	# $month_year is now 'Apr02'
 
 To retrieve a human-friendly date with the time:
 
-	$date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
+	my $date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
 	# $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
 	
-	$a_time_in_the_past = $pepper->time_to_date(1543605300,'to_date_human_time','America/Chicago');
+	my $a_time_in_the_past = $pepper->time_to_date(1543605300,'to_date_human_time','America/Chicago');
 	# $a_time_in_the_past is now 'Nov 30, 2018 at 1:15pm'
 
 Use 'to_just_human_time' to retrieve just the human-friendly time part;
 
-	$a_time_in_the_past = $pepper->time_to_date(1543605300,'to_just_human_time','America/Chicago');
+	my $a_time_in_the_past = $pepper->time_to_date(1543605300,'to_just_human_time','America/Chicago');
 	# $a_time_in_the_past is now '1:15pm'
 
 To get the military time:
 
-	$past_military_time = $pepper->time_to_date(1543605300,'to_just_military_time');
+	my $past_military_time = $pepper->time_to_date(1543605300,'to_just_military_time');
 	# $past_military_time is now '19:15' 
 	# I left off the time zone, so that's UTC time
 
 To extract the weekday name
 
-	$weekday_name = $pepper->time_to_date(1018569600, 'to_day_of_week');
-	$weekday_name = $pepper->time_to_date('2002-04-12', 'to_day_of_week');
+	my $weekday_name = $pepper->time_to_date(1018569600, 'to_day_of_week');
+	my $weekday_name = $pepper->time_to_date('2002-04-12', 'to_day_of_week');
 	# in both cases, $weekday_name is now 'Friday'
 
 To get the numeric day of the week (0..6):
 
-	$weekday_value = $pepper->time_to_date(1543605300,'to_day_of_week_numeric');
+	my $weekday_value = $pepper->time_to_date(1543605300,'to_day_of_week_numeric');
 	# weekday_value is now '5'
 
 To retrieve an ISO-formatted timestamp, i.e. 2004-10-04T16:12:00+00:00
 
-	$iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso');
+	my $iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso');
 	# $iso_timestamp is now '2004-10-04T16:12:00+0000'
 
-	$iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso','America/Los_Angeles');
+	my $iso_timestamp = $pepper->time_to_date(1096906320,'to_datetime_iso','America/Los_Angeles');
 	# $iso_timestamp is now '2004-10-04T09:12:00+0000' (it displays the UTC value)
 
 =head1 THE /opt/pepper DIRECTORY
@@ -950,18 +951,32 @@ L<http://www.template-toolkit.org/>
 
 L<https://metacpan.org>
 
-L<Mojolicious>
-
-L<Mojolicious::Lite>
-
-L<Dancer2>
-
 L<DBI>
 
 L<DateTime>
 
 L<Cpanel::JSON::XS>
 
+L<Mojolicious>
+
+L<Mojolicious::Lite>
+
+L<Dancer2>
+
 =head1 AUTHOR
 
-Eric Chernoff - ericschernoff at gmail.com 
+Eric Chernoff <eric@weaverstreet.net>
+
+Please send me a note with any bugs or suggestions.
+
+=head1 LICENSE
+
+MIT License
+
+Copyright (c) 2020 Eric Chernoff
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
