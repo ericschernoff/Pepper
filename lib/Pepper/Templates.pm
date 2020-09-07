@@ -85,7 +85,8 @@ sub endpoint_handler {
 
 }
 
-1;];
+1;
+];
 }
 
 # templates for the HTML example endpoint
@@ -153,7 +154,8 @@ sub html_example_endpoint {
 </form>
 
 </body>
-</html>];
+</html>
+];
 	# otherwise, send out the perl module
 	} else {
 	
@@ -213,7 +215,8 @@ sub endpoint_handler {
 	# all through, all done
 }
 
-1;];
+1;
+];
 
 	}
 }
@@ -362,7 +365,8 @@ Type=forking
 User=root
 
 [Install]
-WantedBy=multi-user.target};
+WantedBy=multi-user.target
+};
 }
 
 # sample Apache config
@@ -424,7 +428,8 @@ sub apache_config {
 	
 	RequestHeader set X-Forwarded-HTTPS "0"
 
-</VirtualHost>};
+</VirtualHost>
+};
 }
 
 # sample Pepper script
@@ -465,7 +470,8 @@ if ($pepper->{db}) {
 # if we were making changes to the database, we'd want 
 # to end with $pepper->commit(); to commit that DB transaction
 # done	
-exit;];
+exit;
+];
 	
 }
 

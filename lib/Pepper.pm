@@ -170,7 +170,6 @@ Pepper - Quick-start kit for learning and creating microservices in Perl.
 
 =head1 DESCRIPTION / PURPOSE
 
-Perl is a wonderful language with an amazing ecosystem and terrific community.
 This quick-start kit is designed for new users to easily experiment and learn
 about Perl and for seasoned users to quickly stand up simple web services.
 
@@ -220,22 +219,24 @@ Ubuntu 18/20 users have a quick-start option:
 
 =head2 Installing the required system packages
 
+All of the below commands must be run as root or via 'sudo'.
+
 =over 12
 
 =item C<Ubuntu 18 or 20>
 
-apt -y install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
+	# apt -y install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
 
 =item C<CentOS 8>
 
-yum install git perl perldoc perl-devel httpd cc mysql mariadb-connector-c mariadb-devel 
+	# yum install git perl perldoc perl-devel httpd cc mysql mariadb-connector-c mariadb-devel 
 
 =item C<FreeBSD 12 - A bit trickier>
 
-pkg update -f
-mkdir /opt
-pkg install sudo nano apache24 perl5-5.30.3 git p5-DBD-mysql p5-App-cpanminus p5-Parallel-Prefork
-nano -w /usr/local/etc/sudoers --> Add line: YOUR_USERNAME	ALL=(ALL) ALL
+	# pkg update -f
+	# mkdir /opt
+	# pkg install sudo nano apache24 perl5-5.30.3 git p5-DBD-mysql p5-App-cpanminus p5-Parallel-Prefork
+	# nano -w /usr/local/etc/sudoers --> Add line: YOUR_USERNAME	ALL=(ALL) ALL
 
 =back
 
@@ -267,14 +268,14 @@ and read the comments to see how easy it is to code up web endpoints.
 	
 =head2 Start the Plack service:  
 
-	pepper start
+	# pepper start
 
 Check out the results of PepperExample.pm here: https://127.0.0.1:5000 (or in your
 browser, using your server's hostname:5000). You should receive basic JSON results. 
 Modify PepperExample.pm to tweak those results and then restart the Plack service 
 to test your changes:  
 
-	pepper restart
+	# pepper restart
 
 Any errors will be logged to /opt/pepper/log/fatals-YYYY-MM-DD.log (replacing YYYY-MM-DD).
 In a dev environment, you can auto-restart, please see 'pepper help'
@@ -675,6 +676,7 @@ will be a database transaction.  This commit() method will be called automatical
 of the web request, but if you wish to manually commit changes, just call $pepper->commit(); .
 
 If a request fails before completely, commit() is not called and the changes should be rolled-back.
+(Unless you already called 'commit()' prior to the error.)
 
 =head1 JSON METHODS PROVIDED BY THE $pepper OBJECT
 
@@ -751,14 +753,12 @@ To specify that it be 25 characters long;
 Useful method for converting UNIX epochs or YYYY-MM-DD dates to more human-friendly dates.
 This takes three arguments:
 
-=over 12
-
-=item 1. A timestamp, preferably an epoch like 1018569600, but can be a date like 2002-04-12 or 'April 12, 2002'.
+1. A timestamp, preferably an epoch like 1018569600, but can be a date like 2002-04-12 or 'April 12, 2002'.
 The epochs are best for functions that will include the time.
 
-=item 2. An action / command, such as 'to_year' or 'to_date_human_time'. See below for full list.
+2. An action / command, such as 'to_year' or 'to_date_human_time'. See below for full list.
 
-=item 3. Optionally, an Olson DB time zone name, such as 'America/New_York'.  The default is UTC / GMT.
+3. Optionally, an Olson DB time zone name, such as 'America/New_York'.  The default is UTC / GMT.
 You can set your own default via the PERL_DATETIME_DEFAULT_TZ environmental variable or placing 
 in $pepper->{utils}->{time_zone_name}.  Most of examples below take the default time zone, which is
 UTC. B<Be sure to set the time zone if you need local times.>
@@ -909,7 +909,7 @@ after you run 'sudo pepper setup'. Use this file as a basis for adding a virtual
 host configuration under /etc/apache2/conf-enabled .  Several comments have been
 added with friendly suggestions.  You will want to enable several Apahce modules:
 
-	a2enmod proxy ssl headers proxy_http rewrite
+	# a2enmod proxy ssl headers proxy_http rewrite
 
 Nginx is a great web server preferred by many smart people. I prefer Apache 
 because it can use ModSecurity with much less effort.
@@ -941,7 +941,7 @@ Please do set up HTTPS with TLS 1.2+, and please look into ModSecurity with the 
 
 Our first two Shih Tzu's were Ginger and Pepper.  Ginger was the most excellent, amazing
 creature to ever grace the world. Pepper was a sickly ragamuffin. Ginger chased pit bulls 
-like mice and commanded the wind itself, but Pepper your friend.  Pepper was easy to love 
+like mice and commanded the wind itself, but Pepper was your friend.  Pepper was easy to love 
 and hard to disappoint, just like Perl.  
 
 =head1 SEE ALSO
