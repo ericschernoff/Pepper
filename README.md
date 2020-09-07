@@ -1,87 +1,120 @@
 # NAME
 
-Pepper - Quick-start kit for creating microservices in Perl.
-
-FINAL STEPS:
-\- Test FreeBSD
-\- Proofread Documentation
+Pepper - Quick-start kit for learning and creating microservices in Perl.
 
 # DESCRIPTION / PURPOSE
 
 Perl is a wonderful language with an amazing ecosystem and terrific community.
 This quick-start kit is designed for new users to easily experiment and learn
-about Perl and for seasoned users to easily stand up simple web services.
+about Perl and for seasoned users to quickly stand up simple web services.
 
 This is not a framework.  This is a quick-start kit meant to simplify learning and 
-small projects.  The hope is that you will fall in love with Perl and continue your 
-journey on to Mojo, Dancer2, AnyEvent, PDL and all the many terrific Perl libraries.  
-This is a great community of builders, and there is so much to discover at 
-[https://metacpan.org](https://metacpan.org) and [https://perldoc.perl.org/](https://perldoc.perl.org/)
+small projects.  The goal is for you to fall in love with Perl and continue your 
+journey on to Mojo, Dancer2, AnyEvent, RxPerl, PDL and all the many terrific 
+Perl libraries.  This is a great community of builders, and there is so 
+much to discover at [https://metacpan.org](https://metacpan.org) and [https://perldoc.perl.org/](https://perldoc.perl.org/)
 
 This kit supports database connections to MySQL 5.7/8 or MariaDB 10.3+. 
 There are many other great options out there, but one database driver
 was chosen for the sake of simplicity.  If your heart is set on Postgres,
-answer 'N' to the 'Connect to a MySQL/MariaDB database server?' setup prompt
+answer 'N' to the 'Connect to a MySQL/MariaDB database server?' prompt
 and use [DBD:Pg](DBD:Pg) instead of Pepper::DB.
 
 # SYNOPSIS
 
-    To set up a new web service:
+To configure Pepper:
 
-    # sudo pepper setup
-    # pepper set-endpoint /dogs/daisy PepperApps::Dogs::Daisy
-    
-    A new Perl module is created at /opt/pepper/code/PepperApps/Dogs.Daisy.pm.
-    Edit that module to have it perform any actions and return any content you prefer.  
-    You will be able to execute the service via http://you.hostname.ext:5000/dogs/daisy
-    
-    For a simple Perl script, just add this at the top.
-    
-    use Pepper;
-    my $pepper = Pepper->new();
-    
-    The $pepper object will provide several conveniences for MySQL/MariaDB, JSON
-    parsing, Template Toolkit, file handling and logging.  In Web/Plack mode,
-    $pepper will also include the entire PSGI (CGI) environment.
+        # sudo pepper setup
+
+To set up a new web service:
+
+        # pepper set-endpoint /dogs/daisy PepperApps::Dogs::Daisy
+
+A new Perl module is created at /opt/pepper/lib/PepperApps/Dogs/Daisy.pm.
+Edit that module to have it perform your actions and return any content you prefer.  
+You will be able to execute the service via http://you.hostname.ext:5000/dogs/daisy
+If you change your code, restart the Plack service via 'pepper restart'
+
+For a simple Perl script, just add this at the top:
+
+        use Pepper;
+        my $pepper = Pepper->new();
+
+The $pepper object provides several conveniences for MySQL/MariaDB databases, JSON
+parsing, Template Toolkit, file handling and logging.  In Web/Plack mode, 
+$pepper will also include the entire PSGI (CGI) environment.
 
 # INSTALLATION / GETTTING STARTED
 
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
-1\. Install the needed packages
-	Ubuntu 18/20: apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
-	CentOS 8: yum install git perl perldoc perl-devel httpd  cc mysql mariadb-connector-c mariadb-devel 
-	FreeBSD 12: perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
+Ubuntu 18/20 users have a quick-start option:
 
-2\. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
-	user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
+        # curl https://raw.githubusercontent.com/ericschernoff/Pepper/ginger/ubuntu20_quickstart.sh | sh
 
-3\. Install Pepper:  sudo cpanm Pepper
-	It may take several minutes to build and install the few dependencies.
+## Installing the required system packages
 
-4\. Set up / configure Pepper:  sudo pepper setup
-	This will prompt you for the configuration options. Choose carefully, but you can
-	safely re-run this command if needed to make changes.  This command will create the
-	directory under /opt/pepper with the needed sub-directories and templates.
-	Do not provide a 'Default endpoint-handler Perl module' for now. (You can update later.)
+- `Ubuntu 18 or 20`
 
-5\. Open up /opt/pepper/code/PepperExample.pm and read the comments to see how easy it
-	is to code up web endpoints.
+    apt -y install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
 
-6\. Start the Plack service:  pepper start
-	Then check out the results of PepperExample.pm here: https://127.0.0.1:5000 
-	You should receive basic JSON results.  Modify PepperExample.pm to tweak those results
-	and then restart the Plack service to test your changes:  pepper restart
-	Any errors will be logged to /opt/pepper/log/fatals-YYYY-MM-DD.log (replacing YYYY-MM-DD).
-	In a dev environment, you can auto-restart, see 'pepper help'
+- `CentOS 8`
 
-7\. If you would like to write command-line Perl scripts, you can skip step #6 and just
-	start your script like this:
+    yum install git perl perldoc perl-devel httpd cc mysql mariadb-connector-c mariadb-devel 
 
-                use Pepper;
-                my $pepper = Pepper->new();
-                
-        The setup command places a simple example script at /opt/pepper/template/system/example_perl_script.pl
+- `FreeBSD 12 - A bit trickier`
+
+    pkg update -f
+    mkdir /opt
+    pkg install sudo nano apache24 perl5-5.30.3 git p5-DBD-mysql p5-App-cpanminus p5-Parallel-Prefork
+    nano -w /usr/local/etc/sudoers --> Add line: YOUR\_USERNAME	ALL=(ALL) ALL
+
+&#x3d;head2. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
+user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
+
+## Install Pepper:  
+
+        # sudo cpanm Pepper
+
+It may take several minutes to build and install the dependencies.
+
+## Set up / configure Pepper:  
+
+        # sudo pepper setup
+
+This will prompt you for the configuration options. Choose carefully, but you can
+safely re-run this command if needed to make changes. This command will create the
+directory under /opt/pepper with the needed sub-directories and templates.
+Do not provide a 'Default endpoint-handler Perl module' for now. (You can update later.)
+
+## Check out the examples:
+
+Open up PepperExample.pm and HTMLExample.pm under /opt/pepper/lib/PepperApps 
+and read the comments to see how easy it is to code up web endpoints.
+
+## Start the Plack service:  
+
+        pepper start
+
+Check out the results of PepperExample.pm here: https://127.0.0.1:5000 (or in your
+browser, using your server's hostname:5000). You should receive basic JSON results. 
+Modify PepperExample.pm to tweak those results and then restart the Plack service 
+to test your changes:  
+
+        pepper restart
+
+Any errors will be logged to /opt/pepper/log/fatals-YYYY-MM-DD.log (replacing YYYY-MM-DD).
+In a dev environment, you can auto-restart, please see 'pepper help'
+
+## Write a small script:
+
+If you would like to write command-line Perl scripts, you can skip the Plack steps
+and just start your script like this:
+
+        use Pepper;
+        my $pepper = Pepper->new();
+
+The setup command places a simple example script at /opt/pepper/template/system/example\_perl\_script.pl
 
 The $pepper object will have all the methods and variables described below.
 
@@ -90,7 +123,7 @@ the 'Functions' menu and 'Tutorials' under the 'Manuals' menu.
 
 # ADDING / MANAGING ENDPOINTS
 
-Adding a new endpoint is just as easy as:
+Adding a new endpoint is as easy as:
 
         # pepper set-endpoint /Some/URI PerlModuleDirectory::PerlModule
         
@@ -100,8 +133,8 @@ For example:
         # pepper set-endpoint /Carrboro/WeaverStreet PepperApps::Carrboro::WeaverStreet
         
 
-That will map any request to your /Carrboro/WeaverStreet URI to the endpoint\_handler()
-subroutine within /opt/pepper/code/PepperApps/Carrboro/WeaverStreet.pm and a very basic version
+That will map any request to your /Carrboro/WeaverStreet URI to the 'endpoint\_handler'
+subroutine within /opt/pepper/lib/PepperApps/Carrboro/WeaverStreet.pm and a very basic version
 of that file will be created for you.  Simply edit and test the file to power the endpoint.
 
 If you wish to change the endpoint to another module, just re-issue the command:
@@ -113,19 +146,24 @@ You can see your current endpoints via list-endpoints
         # pepper list-endpoints
         
 
-To deactivate an endpoint, you can set it to the default:
+To deactivate an endpoint, you might want to set it to the default:
 
         # pepper set-endpoint /Carrboro/WeaverStreet default
+        
+
+Or you can just delete it
+
+        # pepper delete-endpoint /Carrboro/WeaverStreet
 
 # BASICS OF AN ENDPOINT HANDLER
 
 You can have any code you require within the endpoint\_handler subroutine.  You must
-leave the 'my ($pepper) = @\_;' right below 'sub endpoint\_handler', and your
-endpoint handler must return some text or data that can be sent to the browser.
+leave the 'my ($pepper) = @\_;' right below 'sub endpoint\_handler', and your endpoint\_handler 
+subroutine must return some text or data that can be sent to the browser.
 
-If you wish to send JSON to the client, simply return a reference to the data structure
+If you wish to send JSON to the client, just return a reference to the data structure
 that should be converted to JSON. Otherwise, you can return HTML or text. For your convenience,
-an interface to the the excellent Template-Toolkit library is a part of this kit (see below).
+an interface to the excellent Template-Toolkit library is a part of this kit (see below).
 
 For example:
 
@@ -147,10 +185,10 @@ For example:
         # you can return plain text as well, i.e. generated config files
         
 
-The $pepper object has lots of goodies, described in detail in the following sections.  There
-is also a wealth of additional libraries in [https://metacpan.org](https://metacpan.org) and you add include your 
-own re-usable packages under /opt/pepper/code .  For instance, if many of your endpoints
-share some data-crunching routines, you could create /opt/pepper/code/MyUtils/DataCrunch.pm
+The $pepper object has lots of goodies, described in the following sections.  There
+is also a wealth of libraries in [https://metacpan.org](https://metacpan.org) and you add include your 
+own re-usable packages under /opt/pepper/lib .  For instance, if many of your endpoints
+share some data-crunching routines, you could create /opt/pepper/lib/MyUtils/DataCrunch.pm
 and import it as:  use MyUtils::DataCrunch; .  You can also add subroutines below
 the main endpoint\_handler() subroutine.  Pepper is just plain Perl, and the only "rule"
 is that endpoint\_handler() needs to return what will be sent to the client.
@@ -158,8 +196,8 @@ is that endpoint\_handler() needs to return what will be sent to the client.
 # WEB / PSGI ENVIRONMENT IN THE $pepper OBJECT
 
 When you are building an endpoint handler for a web URI, the $pepper object will
-contain the full PSGI (~CGI) environment, including the parameters sent by
-the client.  This can be accessed as follows:
+contain the full PSGI environment (which is the web request), including the 
+parameters sent by the client.  This can be accessed as follows:
 
 ## $pepper->{params}
 
@@ -172,11 +210,11 @@ can be found as arrays under $pepper->{params}{multi} or comma-separated lists
 under $pepper->{params}.  For example, if are two values, 'Red' and 'White', 
 for the 'colors' param, you could access:
 
->         $pepper->{params}{colors} # Would be 'Red,White'
->         $pepper->{params}{multi}{colors}[0]  # would be 'Red'
->         $pepper->{params}{multi}{colors}[1]  # would be 'White'
->
-> \-back	
+        $pepper->{params}{colors} # Would be 'Red,White'
+
+        $pepper->{params}{multi}{colors}[0]  # would be 'Red'
+
+        $pepper->{params}{multi}{colors}[1]  # would be 'White'
 
 ## $pepper->{cookies}
 
@@ -193,7 +231,7 @@ Setting cookies can be done like so:
         }); 
         
 
-These cookies are tied to the web service's hostname.
+These cookies are tied to your web service's hostname.
 
 ## $pepper->{uploaded\_files}
 
@@ -211,8 +249,8 @@ uploaded files to a permmanet space:
 
 ## $pepper->{auth\_token}	
 
-If the client sends an 'Authorization' header, that value will be stored in $pepper->{auth\_token} 
-for a minimally-secure API, provided you have some code to validate this token.
+If the client sends an 'Authorization' header, that value will be stored in $pepper->{auth\_token}.
+Useful for a minimally-secure API, provided you have some code to validate this token.
 
 ## $pepper->{hostname}	
 
@@ -231,14 +269,14 @@ will be '/All/Hail/Ginger'.
 
 The plain request and response Plack objects will be available at $pepper->{plack\_handler}->{request}
 and $pepper->{plack\_handler}->{response} respectively.  Please only use these if you absolutely must,
-and please see [Plack::Request](https://metacpan.org/pod/Plack%3A%3ARequest) and [Plack::Response](https://metacpan.org/pod/Plack%3A%3AResponse) before working with these.
+and please see [Plack::Request](https://metacpan.org/pod/Plack::Request) and [Plack::Response](https://metacpan.org/pod/Plack::Response) before working with these.
 
 # RESPONSE / LOGGING / TEMPLATE METHODS PROVIDED BY THE $pepper OBJECT
 
 ## template\_process
 
-This is an easy interface to the excellent Template Toolkit.  This is great for generating
-HTML or any kind of processed text files.  Create your Template Toolkit templates 
+This is an simple interface to the excellent Template Toolkit, which is great for generating
+HTML and really any kind of text files.  Create your Template Toolkit templates 
 under /opt/pepper/template and please see [Template](https://metacpan.org/pod/Template) and [http://www.template-toolkit.org](http://www.template-toolkit.org)
 The basic idea is to process a template with the values in a data structure to create the 
 appropriate text output.  
@@ -250,7 +288,8 @@ To process a template and have your endpoint handler return the results:
                 'template_vars' => $some_data_structure,
         });
 
-You can add subdirectories under /opt/pepper/template and refer to the files as
+That expects to find some\_template.tt under /opt/pepper/template.  You can add 
+subdirectories under /opt/pepper/template and refer to the files as
 'subdirectory\_name/template\_filename.tt'.
 
 To save the generated text as a file:
@@ -267,7 +306,7 @@ To have the template immediate sent out, such as for a fancy error page:
                 'template_file' => 'some_template.tt', 
                 'template_vars' => $some_data_structure,
                 'send_out' => 1,
-                'stop_here' => 1, # recommended, execution will continue, but generated text is what they will get.
+                'stop_here' => 1, # recommended to stop execution
         });
         
 
@@ -278,18 +317,19 @@ debugging messages.  You can send a plain text string or a reference to a data s
 
         $pepper->logger('A nice log message','example-log');
 
-        That will add a timestamped entry to a file named for example-log-YYYY-MM-DD.log. If you
-        leave off the second argument, the message is appended to today's errors-YYYY-MM-DD.log.
+That will add a timestamped entry to a file named for example-log-YYYY-MM-DD.log. If you
+leave off the second argument, the message is appended to today's errors-YYYY-MM-DD.log.
 
         $pepper->logger($hash_reference,'example-log');
 
-        This will save the output of Data::Dumper's Dumper($hash_reference) to today's
-        example-log-YYYY-MM-DD.log.
+This will save the output of Data::Dumper's Dumper($hash\_reference) to today's
+example-log-YYYY-MM-DD.log.
 
 ## send\_response
 
 This method will send data to the client.  It is usually unnecessary, as you will simply
-return data structures or text.  This may be useful in two situations:
+return data structures or text at the end of endpoint\_handler().  
+However, send\_response() may be useful in two situations:
 
         # To bail-out in case of an error:
         $pepper->send_response('Error, everything just blew up.',1);
@@ -311,7 +351,16 @@ From a web endpoint handler, you may set a cookie like this:
 
 # DATABASE METHODS PROVIDED BY THE $pepper OBJECT
 
-Note, The [DBI](https://metacpan.org/pod/DBI) database handle object is stored in $pepper->{db}->{dbh}.
+## Random hints
+
+These method will work if you configured a MySQL or MariaDB connection
+via 'sudo pepper setup' command.  
+
+The [DBI](https://metacpan.org/pod/DBI) database handle object is stored in $pepper->{db}->{dbh}.
+
+The 'pepper' command can test your database connection config:
+
+        # pepper test-db
 
 ## quick\_select
 
@@ -321,15 +370,15 @@ second argument is an array reference of values for the placeholders.
 
         ($birth_date, $adopt_date) = $pepper->quick_select(qq{
                 select birth_date, adoption_date from family.dogs
-                where name=? and breed=?
-        },[ 'Daisy', 'Shih Tzu' ]);
+                where name=? and breed=? limit 1
+        }, [ 'Daisy', 'Shih Tzu' ] );
         
         ($todays_date) = $pepper->quick_select(' select curdate() ');
 
 ## sql\_hash
 
-Very useful for multi-row results.  Creates a two-level data
-structure, where the top key is the values of the first column, and 
+Very useful for SELECT's with multi-row results.  Creates a two-level 
+data structure, where the top key is the values of the first column, and 
 the second-level keys are either the other column names or the keys you
 provide.  Returns references to the results hash and the array of
 the first level keys.
@@ -337,10 +386,11 @@ the first level keys.
         ($results, $result_keys) = $pepper->sql_hash(qq{
                 select id, name, birth_date from my_family.family_members
                 where member_type=? order by name
-        },[ 'Dog']);
+        }, [ 'Dog'] );
         
-        You'd now have:
-        
+
+You now have:
+
         $results = {
                 '1' => {
                         'name' => 'Ginger',
@@ -369,9 +419,9 @@ Using alternative keys:
         ($results, $result_keys) = $pepper->sql_hash(qq{
                 select id, name, date_format(birth_date,'%Y') from my_family.family_members
                 where member_type=? order by name
-        },[ 'Dog' ], [ 'name','birth_year' ]);
+        },[ 'Dog' ], [ 'name','birth_year' ] );
 
-        Now, results would look like
+Now, results would look like
 
         $results = {
                 '1' => {
@@ -383,7 +433,7 @@ Using alternative keys:
 
 ## list\_select
 
-Use for SELECT statements which may return multiple results with one column each.
+Useful for SELECT statements which return multiple results with one column each.
 The required first argument is the SELECT statement to run. The optional second 
 argument is a reference to an array of values for the placeholders (recommended).
 
@@ -397,11 +447,11 @@ argument is a reference to an array of values for the placeholders (recommended)
 
 ## comma\_list\_select
 
-Provides the same function as list\_select() but returns a scalar containing
+Provides the same functionality as list\_select() but returns a scalar containing
 a comma-separated list of the values found by the SELECT statement.
 
         $text_list = $pepper->comma_list_select(
-                'select name from my_family.family_members where member_type=?,
+                "select name from my_family.family_members where member_type=?",
                 ['Dog']
         );
         
@@ -410,7 +460,7 @@ a comma-separated list of the values found by the SELECT statement.
 
 ## do\_sql
 
-Flexible method to execute a SQL statement of any kind. It's maybe worth noting 
+Flexible method to execute a SQL statement of any kind. It may be worth noting 
 that do\_sql() is the only provided method that will perform non-SELECT statements.
 
 Args are the SQL statement itself and optionally (highly-encouraged), an arrayref
@@ -426,12 +476,12 @@ of values for placeholders.
                 insert into my_family.family_members
                 (name, birth_date, member_type)
                 values (?,?,?)
-        }, [ 'Daisy', '2019-08-01', 'Dog' );
+        }, [ 'Daisy', '2019-08-01', 'Dog'] );
         
         $pepper->do_sql(qq{
                 update my_family.family_members.
                 set name=? where id=?
-        }, ['Sandy', 6 );       
+        }, ['Sandy', 6] );      
 
 For a SELECT statement, do\_sql() returns a reference to an array of arrays of results.
 
@@ -454,30 +504,33 @@ DB name (i.e no 'db\_name.table\_name').
 
 ## commit
 
-Pepper does not turn on auto-commit, so each web request is a database transaction (if you
-are using the database support).  This method will be called automatically at the end 
-of the web request, but if you wish to manually commit changes, just call $pepper->commit();
+Pepper does not turn on auto-commit, so. if you are using database support, each web request 
+will be a database transaction.  This commit() method will be called automatically at the end 
+of the web request, but if you wish to manually commit changes, just call $pepper->commit(); .
 
-If a request fails due, commit() is not called and the changes will be rolled-back.
+If a request fails before completely, commit() is not called and the changes should be rolled-back.
 
 # JSON METHODS PROVIDED BY THE $pepper OBJECT
 
-These methods provide default/basic functions of the excellent [Cpanel::JSON::XS](https://metacpan.org/pod/Cpanel%3A%3AJSON%3A%3AXS) library.
+These methods provide default/basic functions of the excellent [Cpanel::JSON::XS](https://metacpan.org/pod/Cpanel::JSON::XS) library.
 
 ## json\_from\_perl
 
 Accepts a reference to a data structure and converts it to JSON text:
 
         $json_string = $pepper->json_from_perl($hash_reference);
+
         $json_string = $pepper->json_from_perl(\%some_hash);
+
         # in either case, $json_string now contains a JSON representation of the data structure
 
 ## json\_to\_perl
 
-Accepts a scalar with a JSON string and converts it to a reference to a Perl data structure.
+Accepts a scalar with a JSON string and converts it into a reference to a Perl data structure.
 
         $data = $pepper->json_to_perl($json_text);
-        # maybe now you have $$data{name} or other keys / layers to access like 
+        
+        # now you have $$data{name} or other keys / layers to access like 
         # any other Perl hashref
         
 
@@ -495,7 +548,7 @@ Converts Perl data structure to JSON and saves it to a file.
 
         $pepper->write_json_file('path/to/data_file.json', \%data_structure);
 
-# DATE / UTILITY METHODS PROVIDED BY THE $pepper OBJECT
+# GENERAL / DATE UTILITY METHODS PROVIDED BY THE $pepper OBJECT
 
 ## filer
 
@@ -509,7 +562,8 @@ To load the contents of a file into a scalar (aka 'slurp'):
 To save the contents of a scalar into a file:
 
         $pepper->filer('/path/to/new_file.ext','write',$scalar_of_content);
-        # maybe you have an array
+
+        # or maybe you have an array
         $pepper->filer('/path/to/new_file.ext','write', join("\n",@array_of_lines)  );
 
 To append a file with additional content
@@ -534,22 +588,22 @@ To specify that it be 25 characters long;
 Useful method for converting UNIX epochs or YYYY-MM-DD dates to more human-friendly dates.
 This takes three arguments:
 
-- A timestamp, preferably an epoch like 1018569600, but can be a date like 2002-04-12 or 'April 12, 2002'.
+- 1. A timestamp, preferably an epoch like 1018569600, but can be a date like 2002-04-12 or 'April 12, 2002'.
 The epochs are best for functions that will include the time.
-- An action / command, such as 'to\_year' or 'to\_date\_human\_time'. See below for full list.
-- Optionally, an Olson DB time zone name, such as 'America/New\_York'.  The default is UTC / GMT.
+- 2. An action / command, such as 'to\_year' or 'to\_date\_human\_time'. See below for full list.
+- 3. Optionally, an Olson DB time zone name, such as 'America/New\_York'.  The default is UTC / GMT.
 You can set your own default via the PERL\_DATETIME\_DEFAULT\_TZ environmental variable or placing 
 in $pepper->{utils}->{time\_zone\_name}.  Most of examples below take the default time zone, which is
-UTC. Be sure to set the time zone if you need local times.
+UTC. **Be sure to set the time zone if you need local times.**
 
 To get the epoch of 00:00:00 on a particular date:
 
-        $epoch_value = $pepper->time_to_date($date, 'to_unix_start');
+        $epoch_value = $pepper->time_to_date('2002-04-12', 'to_unix_start');
         # $epoch_value is now something like 1018569600
 
 To convert an epoch into a YYYY-MM-DD date:
 
-        $date = $pepper->time_to_date($date, 'to_date_db');
+        $date = $pepper->time_to_date(1018569600, 'to_date_db');
         # $date is now something like '2002-04-12'
         
 
@@ -563,7 +617,7 @@ To convert a date or epoch to a more friendly format, such as April 12, 2002:
 You can always use time() to get values for the current moment:
 
         $todays_date_human = $pepper->time_to_date(time(), 'to_date_human');
-        # $todays_date_human is now 'September 1'
+        # $todays_date_human is 'September 1' at the time of this writing
 
 'to\_date\_human' leaves off the year if the moment is within the last six months.
 This can be useful for displaying a history log.
@@ -584,29 +638,26 @@ To include the weekday with 'to\_date\_human\_abbrev' output:
         $nicer_date_string = $pepper->time_to_date('2002-04-12', 'to_date_human_dayname');
         # $nicer_date_string is now 'Friday, Apr 12, 2002'
 
-To extract the year from a epoch:
+To find just the year from a epoch:
 
         $year = $pepper->time_to_date(time(), 'to_year');
         # $year is now '2020' (as of this writing)
         
         $year = $pepper->time_to_date(1018569600, 'to_year');
-        # $year is now '2012'
+        # $year is now '2002'
 
 To convert an epoch to its Month/Year value:
 
         $month_year = $pepper->time_to_date(1018569600, 'to_month');
-        # $month_year is now 'April 2012'
+        # $month_year is now 'April 2002'
 
 To convert an epoch to an abbreviated Month/Year value (useful for ID's):
 
         $month_year = $pepper->time_to_date(1018569600, 'to_month_abbrev');
-        # $month_year is now 'Apr12'
+        # $month_year is now 'Apr02'
 
 To retrieve a human-friendly date with the time:
 
-        $date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
-        # $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
-        
         $date_with_time = $pepper->time_to_date(time(), 'to_date_human_time');
         # $date_with_time is now 'Sep 1 at 2:59pm' as of this writing
         
@@ -647,7 +698,7 @@ To retrieve an ISO-formatted timestamp, i.e. 2004-10-04T16:12:00+00:00
 
 After running 'sudo pepper setup', /opt/pepper should contain the following subdirectories:
 
-- `code`
+- `lib`
 
     This is where your endpoint handler modules go.  This will be added to the library path
     in the Plack service, so you can place any other custom modules/packages that you create
@@ -659,7 +710,7 @@ After running 'sudo pepper setup', /opt/pepper should contain the following subd
     If you do not opt to specify an option for 'url\_mappings\_database', the pepper\_endpoints.json file
     will be stored here as well.  Please store any other custom configurations.
 
-- `lib`
+- `psgi`
 
     This contains the pepper.psgi script used to run your services via Plack/Gazelle. 
     Please only modify if you are 100% sure of the changes you are making.
@@ -672,15 +723,15 @@ After running 'sudo pepper setup', /opt/pepper should contain the following subd
 
 - `template`
 
-    This is where Template Toolkit templates are kept. These can be used to create text
-    files of any type, including HTML to return via the web.  Be sure to not delete 
-    the 'system' subdirectory or any of its files.
+    This is where your Template Toolkit templates are kept. These can be used to create text
+    files of any type, including HTML to return via the web.  Be sure to not remove the 
+    'system' subdirectory or any of its files.
 
-# USING WITH APACHE AND SYSTEMD
+# USING APACHE AND SYSTEMD
 
-Plack services like Pepper should not be exposed directly to the internet.
-Instead, you  should always use a full-featured web server like Apache and 
-Nginx as a front-end for Plack, and be sure to use TLS.  The good news is 
+Plack services, like Pepper, should not be exposed directly to the internet.
+Instead, you should always have a full-featured web server like Apache and 
+Nginx as a front-end for Plack, and be sure to use HTTPS / TLS.  The good news is 
 that you only need to configure Apache / Nginx once (in a while).  
 
 A sample pepper\_apache.conf file will be saved under /opt/pepper/template/system
@@ -705,7 +756,7 @@ header -- but you will need to validate that in your custom code.
 
 For basic projects, Auth0 has a generous free tier and can be easily integrated with
 Apache [https://auth0.com/docs/quickstart/webapp/apache](https://auth0.com/docs/quickstart/webapp/apache) so your Perl code will
-be able to see the confirmed identify in %ENV.
+be able to see the user's confirmed identify in %ENV.
 
 You can also configure Apache/OpenID to authenticate against Google's social login
 without modifying your Perl code: [https://spin.atomicobject.com/2020/05/09/google-sso-apache/](https://spin.atomicobject.com/2020/05/09/google-sso-apache/)
@@ -718,27 +769,33 @@ Please do set up HTTPS with TLS 1.2+, and please look into ModSecurity with the 
 
 # ABOUT THE NAME
 
-Our first Shih Tzu's were Ginger and Pepper.  Ginger was the most excellent, powerful
-creature to ever grace the world. Pepper was a sickly ragamuffin. Ginger chased 
-pit bulls like mice and commanded the wind, but Pepper was your friend. Pepper was
-easy to love and hard to disappoint, just like Perl.  
+Our first two Shih Tzu's were Ginger and Pepper.  Ginger was the most excellent, amazing
+creature to ever grace the world. Pepper was a sickly ragamuffin. Ginger chased pit bulls 
+like mice and commanded the wind itself, but Pepper your friend.  Pepper was easy to love 
+and hard to disappoint, just like Perl.  
 
 # SEE ALSO
 
-http://www.template-toolkit.org/
+[https://perlmaven.com/](https://perlmaven.com/)
+
+[https://perldoc.perl.org/](https://perldoc.perl.org/)
+
+[http://www.template-toolkit.org/](http://www.template-toolkit.org/)
+
+[https://metacpan.org](https://metacpan.org)
+
+[Mojolicious](https://metacpan.org/pod/Mojolicious)
+
+[Mojolicious::Lite](https://metacpan.org/pod/Mojolicious::Lite)
+
+[Dancer2](https://metacpan.org/pod/Dancer2)
+
+[DBI](https://metacpan.org/pod/DBI)
+
+[DateTime](https://metacpan.org/pod/DateTime)
+
+[Cpanel::JSON::XS](https://metacpan.org/pod/Cpanel::JSON::XS)
 
 # AUTHOR
 
 Eric Chernoff - ericschernoff at gmail.com 
-
-# POD ERRORS
-
-Hey! **The above document had some coding errors, which are explained below:**
-
-- Around line 345:
-
-    You forgot a '=back' before '=head2'
-
-- Around line 703:
-
-    Deleting unknown formatting code U<>

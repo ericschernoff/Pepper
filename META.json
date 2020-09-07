@@ -1,16 +1,16 @@
 {
-   "abstract" : "Quick-start kit for creating microservices in Perl.",
+   "abstract" : "Quick-start kit for learning and creating microservices in Perl.",
    "author" : [
       "Eric Chernoff - ericschernoff at gmail.com "
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.1.10, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Minilla/v3.1.9, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "mit"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : 2
+      "version" : "2"
    },
    "name" : "Pepper",
    "no_index" : {
@@ -34,6 +34,7 @@
             "Date::Format" : "2.24",
             "Date::Manip::Date" : "6.72",
             "DateTime" : "1.50",
+            "Devel::CheckBin" : "0.04",
             "Encode" : "2.88",
             "File::RotateLogs" : "0.08",
             "IO::Prompter" : "0.004015",
@@ -92,6 +93,6 @@
       "root <root@majestica-dev.weaverstreet.net>",
       "root <root@pepper.weaverstreet.net>"
    ],
-   "x_serialization_backend" : "JSON::PP version 4.02",
+   "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
 }

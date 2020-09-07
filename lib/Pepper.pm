@@ -214,21 +214,28 @@ $pepper will also include the entire PSGI (CGI) environment.
 
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
 
-=head2 Install the needed packages
+Ubuntu 18/20 users have a quick-start option:
+
+	# curl https://raw.githubusercontent.com/ericschernoff/Pepper/ginger/ubuntu20_quickstart.sh | sh
+
+=head2 Installing the required system packages
 
 =over 12
 
 =item C<Ubuntu 18 or 20>
 
-apt install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
+apt -y install build-essential cpanminus libmysqlclient-dev perl-doc zlib1g-dev apache2 apache2-utils
 
 =item C<CentOS 8>
 
-yum install git perl perldoc perl-devel httpd  cc mysql mariadb-connector-c mariadb-devel 
+yum install git perl perldoc perl-devel httpd cc mysql mariadb-connector-c mariadb-devel 
 
-=item C<FreeBSD 12>
+=item C<FreeBSD 12 - A bit trickier>
 
-pkg install perl5.32 or perl5-5.30-3, p5-App-cpanminus, p5-DBD-mysql
+pkg update -f
+mkdir /opt
+pkg install sudo nano apache24 perl5-5.30.3 git p5-DBD-mysql p5-App-cpanminus p5-Parallel-Prefork
+nano -w /usr/local/etc/sudoers --> Add line: YOUR_USERNAME	ALL=(ALL) ALL
 
 =back
 
@@ -506,9 +513,16 @@ From a web endpoint handler, you may set a cookie like this:
 
 =head1 DATABASE METHODS PROVIDED BY THE $pepper OBJECT
 
+=head2 Random hints
+
 These method will work if you configured a MySQL or MariaDB connection
-via 'sudo pepper setup' command.  The L<DBI> database handle object 
-is stored in $pepper->{db}->{dbh}.
+via 'sudo pepper setup' command.  
+
+The L<DBI> database handle object is stored in $pepper->{db}->{dbh}.
+
+The 'pepper' command can test your database connection config:
+
+	# pepper test-db
 
 =head2 quick_select
 
