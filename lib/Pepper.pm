@@ -240,7 +240,7 @@ All of the below commands must be run as root or via 'sudo'.
 
 =back
 
-=head2. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
+=head2 Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
 user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
 B<Note:> Use the 'mysql_native_password' plugin when creating your database users, as in:
 
