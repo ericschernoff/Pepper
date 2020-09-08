@@ -70,7 +70,7 @@ All of the below commands must be run as root or via 'sudo'.
             # pkg install sudo nano apache24 perl5-5.30.3 git p5-DBD-mysql p5-App-cpanminus p5-Parallel-Prefork
             # nano -w /usr/local/etc/sudoers --> Add line: YOUR_USERNAME    ALL=(ALL) ALL
 
-&#x3d;head2. Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
+## Recommended: Install and configure your MySQL/MariaDB database. Create a designated 
 user and database for Pepper. See the Mysql / MariaDB docs for guidance on this task.
 **Note:** Use the 'mysql\_native\_password' plugin when creating your database users, as in:
 
