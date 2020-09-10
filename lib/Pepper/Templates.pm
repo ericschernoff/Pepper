@@ -75,6 +75,7 @@ sub endpoint_handler {
 	my $starter_content = {
 		'current_timestamp' => $pepper->time_to_date( time(), 'to_date_human_full' ),
 		'hello' => 'world',
+		'send_params' => $pepper->{params},
 	};
 	
 	# return the content back to the main process, and Pepper will send it out to the client
