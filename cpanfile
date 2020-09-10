@@ -1,6 +1,6 @@
 requires 'perl', '>= 5.022001';
 
-on 'configure' => sub {
+on 'runtime' => sub {
 	requires 'Cpanel::JSON::XS', '>= 4.08';
 	requires 'DBI', '>= 1.643';
 	requires 'DBD::mysql', '>= 4.050';
