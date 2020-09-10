@@ -568,7 +568,7 @@ sub plack_controller {
 
 		my $max_workers = $args[1] || 10;
 
-		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/psgi --log-file="| rotatelogs /opt/pepper/log/pepper.log 86400" --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
+		system(qq{/usr/local/bin/start_server --enable-auto-restart --auto-restart-interval=300 --port=5000 --dir=/opt/pepper/psgi --log-file=/opt/pepper/log/pepper.log --daemonize --pid-file=$pid_file -- plackup -s Gazelle --max-workers=$max_workers -E deployment $dev_reload pepper.psgi});
 	
 	} elsif ($args[0] eq 'stop') {
 		

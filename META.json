@@ -34,7 +34,6 @@
             "Date::Format" : "2.24",
             "Date::Manip::Date" : "6.72",
             "DateTime" : "1.50",
-            "Devel::CheckBin" : "0.04",
             "Encode" : "2.88",
             "File::RotateLogs" : "0.08",
             "IO::Prompter" : "0.004015",
