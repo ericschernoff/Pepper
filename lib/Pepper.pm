@@ -577,7 +577,7 @@ You now have:
 		},
 	};
 	
-	$results = [
+	$result_keys = [
 		'4','1','2','3'
 	];
 
@@ -598,6 +598,8 @@ Now, results would look like
 		...and so forth...
 	};
 
+B<Note:> sql_hash() does not work with 'select *' queries. The column names must be
+a part of your SELECT statement or provided as the third argument.
 
 =head2 list_select
 
