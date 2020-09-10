@@ -212,6 +212,7 @@ $pepper will also include the entire PSGI (CGI) environment.
 =head1 INSTALLATION / GETTTING STARTED
 
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
+B<Installation on Windows is not supported at this time.> 
 
 Ubuntu 18/20 users have a quick-start option:
 
@@ -910,8 +911,8 @@ added with friendly suggestions.  You will want to enable several Apahce modules
 
 	# a2enmod proxy ssl headers proxy_http rewrite
 
-Nginx is a great web server preferred by many smart people. I prefer Apache 
-because it can use ModSecurity with much less effort.
+Nginx is a fine web server, but I recommend Apache as it can be integrated with
+ModSecurity with much less effort.  
 
 Use Systemd keep Pepper online as a server (like Apache or MySQL).  You will 
 find an example SystemD service/config file at /opt/pepper/template/system/pepper.service .
