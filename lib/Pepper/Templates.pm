@@ -15,7 +15,9 @@ sub new {
 	my ($class) = @_;
 
 	# set up the object with all the options data
-	my $self = bless {}, $class;
+	my $self = bless {
+		'pepper_directory' => $ENV{HOME}.'/pepper',
+	}, $class;
 
 	return $self;
 }
@@ -75,7 +77,7 @@ sub endpoint_handler {
 	my $starter_content = {
 		'current_timestamp' => $pepper->time_to_date( time(), 'to_date_human_full' ),
 		'hello' => 'world',
-		'send_params' => $pepper->{params},
+		'psgi_params' => $pepper->{params},
 	};
 	
 	# return the content back to the main process, and Pepper will send it out to the client
@@ -97,7 +99,7 @@ sub html_example_endpoint {
 	# we have two parts to this: a TT template and a endpoint handler module
 	if (!$send_handler) {
 		return q[[%# This template is used for the /pepper/html_example example endpoint.  
-	Please see /opt/pepper/lib/PepperApps/HTMLExample.pm %]
+	Please see $ENV{HOME}/pepper/lib/PepperApps/HTMLExample.pm %]
 	
 <!DOCTYPE html>
 <html>
@@ -203,7 +205,7 @@ sub endpoint_handler {
 	}
 	
 	# if they didn't check the return-JSON option, we will prepare some HTML via
-	# our basic Template Toolkit template.  Please check out /opt/pepper/templates/system/html_example.tt
+	# our basic Template Toolkit template.  Please check out [%pepper_directory%]/templates/system/html_example.tt
 	return $pepper->template_process({
 		'template_file' => 'system/html_example.tt',
 		'template_vars' => {
@@ -311,8 +313,8 @@ my $app = sub {
 
 # rotate the log every day
 my $rotatelog = File::RotateLogs->new(
-	logfile => '/opt/pepper/log/pepper_access_log.%Y%m%d%H%M',
-	linkname => '/opt/pepper/log/pepper_access_log',
+	logfile => '[%pepper_directory%]/log/pepper_access_log.%Y%m%d%H%M',
+	linkname => '[%pepper_directory%]/log/pepper_access_log',
 	rotationtime => 86400,
 	maxage => 86400,
 );
@@ -357,7 +359,7 @@ ExecStart=/usr/local/bin/pepper start 30
 ExecReload=pepper restart
 ExecStop=pepper stop
 Restart=on-failure
-PIDFile=/opt/pepper/log/pepper.pid
+PIDFile=$ENV{HOME}/pepper/log/pepper.pid
 KillSignal=SIGTERM
 PrivateTmp=true
 Type=forking
