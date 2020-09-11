@@ -212,9 +212,10 @@ $pepper will also include the entire PSGI (CGI) environment.
 =head1 BREAKING CHANGE IN VERSION 1.1
 
 From version 1.1, Pepper looks for its workspace directory in your home directory.
-If you installed Pepper before 1.1, that workspace will be under /opt/pepper. You 
-can work around this via this command 'ln -s /opt/pepper ~/peper', or you can
-re-run 'pepper setup' and copy/move your custom files from /opt/pepper as needed.
+If you installed Pepper prior to 1.1 (9/12/2020), that workspace will be under 
+/opt/pepper. You can work around this via this command 'ln -s /opt/pepper ~/peper', 
+or you can re-run 'pepper setup' and copy/move your custom files from /opt/pepper 
+as needed.
 
 =head1 INSTALLATION / GETTTING STARTED
 
@@ -239,7 +240,7 @@ These package-installation commands will need to be run as root or via 'sudo'.
 
 	# yum install git perl perldoc perl-devel httpd cc mysql mariadb-connector-c mariadb-devel 
 
-=item C<FreeBSD 12
+=item C<FreeBSD 12>
 
 	# pkg update -f && pkg install perl5-5.30.3 git p5-DBD-mysql p5-App-cpanminus p5-Parallel-Prefork
 
