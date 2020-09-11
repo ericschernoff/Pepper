@@ -209,6 +209,13 @@ The $pepper object provides several conveniences for MySQL/MariaDB databases, JS
 parsing, Template Toolkit, file handling and logging.  In Web/Plack mode, 
 $pepper will also include the entire PSGI (CGI) environment.
 
+=head1 BREAKING CHANGE IN VERSION 1.1
+
+From version 1.1, Pepper looks for its workspace directory in your home directory.
+If you installed Pepper before 1.1, that workspace will be under /opt/pepper. You 
+can work around this via this command 'ln -s /opt/pepper ~/peper', or you can
+re-run 'pepper setup' and copy/move your custom files from /opt/pepper as needed.
+
 =head1 INSTALLATION / GETTTING STARTED
 
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
