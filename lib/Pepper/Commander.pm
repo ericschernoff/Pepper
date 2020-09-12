@@ -560,7 +560,7 @@ sub prompt_user {
 			if ($$results{$prompt_key} !~ /^(Y|N)$/) { # if not exactly right, use the default or just N
 				$$results{$prompt_key} = $$prompt_set[2] || 'N';
 			}
-		}
+		}		
 		
 		# accept defaults
 		$$results{$prompt_key} ||= $$prompt_set[2];

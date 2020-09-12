@@ -86,10 +86,7 @@
    },
    "version" : "1.1",
    "x_contributors" : [
-      "Eric Chernoff <eric@pepper.weaverstreet.net>",
       "Eric Chernoff <ericschernoff@gmail.com>",
-      "root <root@majestica-dev.weaverstreet.net>",
-      "root <root@pepper.weaverstreet.net>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
