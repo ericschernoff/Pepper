@@ -175,9 +175,10 @@ about Perl and for seasoned users to quickly stand up simple web services.
 
 This is not a framework.  This is a quick-start kit meant to simplify learning and 
 small projects.  The goal is for you to fall in love with Perl and continue your 
-journey on to Mojo, Dancer2, AnyEvent, RxPerl, PDL and all the many terrific 
-Perl libraries.  This is a great community of builders, and there is so 
-much to discover at L<https://metacpan.org> and L<https://perldoc.perl.org/>
+journey on to Mojo, Dancer2, AnyEvent, Rex, RPerl, and all other the many terrific 
+Perl libraries (more than I can list here).  This is a great community of builders, 
+and there is so much to discover at L<https://metacpan.org> 
+and L<https://perldoc.perl.org/>
 
 This kit supports database connections to MySQL 5.7/8 or MariaDB 10.3+. 
 There are many other great options out there, but one database driver
@@ -240,7 +241,7 @@ These package-installation commands will need to be run as root or via 'sudo'.
 
 =item C<CentOS 8>
 
-	# yum install git perl perldoc perl-devel httpd cc mysql mariadb-connector-c mariadb-devel 
+	# yum install perl perl-utils perl-devel httpd gcc mysql mariadb-connector-c mariadb-devel 
 
 =item C<FreeBSD 12>
 
