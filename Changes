@@ -2,6 +2,10 @@ Revision history for Perl extension Pepper
 
 {{$NEXT}}
 
+1.2.1 2020-09-12T20:41:39Z
+
+    - Version number change to three-digits to work with PAUSE's version checks.
+
 1.1.1 2020-09-12T20:10:28Z
 
     - Make sure that the Y/N setup prompts only accept 'Y' or 'N'

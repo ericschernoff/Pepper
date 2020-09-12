@@ -1,6 +1,6 @@
 package Pepper::Utilities;
 
-$Pepper::Utilities::VERSION = '1.1.1';
+$Pepper::Utilities::VERSION = '1.2.1';
 
 # for utf8 support with JSON
 use utf8;

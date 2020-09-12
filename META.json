@@ -4,7 +4,7 @@
       "Eric Chernoff <eric@weaverstreet.net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.1.9, CPAN::Meta::Converter version 2.150010",
+   "generated_by" : "Minilla/v3.1.11, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "mit"
    ],
@@ -84,12 +84,9 @@
          "web" : "https://github.com/ericschernoff/Pepper"
       }
    },
-   "version" : "1.1.1",
+   "version" : "1.2.1",
    "x_contributors" : [
-      "Eric Chernoff <eric@pepper.weaverstreet.net>",
-      "Eric Chernoff <ericschernoff@gmail.com>",
-      "root <root@majestica-dev.weaverstreet.net>",
-      "root <root@pepper.weaverstreet.net>"
+      "Eric Chernoff <ericschernoff@gmail.com>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
