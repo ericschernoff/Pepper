@@ -201,21 +201,28 @@ sub setup_and_configure {
 	
 	$config_options_map = [
 		['development_server',
-			qq{Is this a development server? 
-If you select 'Y', errors will be piped to the screen.
+			qq{
+Is this a development server? 
+If you select 'Y', errors will be piped to the screen and logged.
 Select 'N' for production servers, where errors will be logged but not shown to the user. (Y or N)},'Y'],
-		['use_database','Auto-Connect to a MySQL/MariaDB database server? This will make the database/SQL methods available via the $pepper object.(Y or N)','Y'],
-		['database_server', 'Hostname or IP Address for your MySQL/MariaDB server (required)'],
-		['database_username', 'Username to connect to your MySQL/MariaDB server (required)'],
-		['database_password', 'Password to connect to your MySQL/MariaDB server (required)'],
-		['connect_to_database', qq{Default database for the MySQL/MariaDB connection.},'information_schema'],
+		['use_database',qq{
+Auto-Connect to a MySQL/MariaDB database server? 
+This will make the database/SQL methods available via the $pepper object.(Y or N)},'Y'],
+		['database_server', "\n".'Hostname or IP Address for your MySQL/MariaDB server (required)'],
+		['database_username', "\n".'Username to connect to your MySQL/MariaDB server (required)'],
+		['database_password', "\n".'Password to connect to your MySQL/MariaDB server (required)'],
+		['connect_to_database', qq{
+Default database for the MySQL/MariaDB connection.},'information_schema'],
 		['url_mappings_database', 
-			qq{Database to store URL/endpoint mappings. 
+			qq{
+Database to store URL/endpoint mappings. 
 A 'pepper_endpoints' table will be created and maintained via 'pepper set-endpoint'. 
 This is a faster option for handling requests, but you may leave blank for JSON config file.}],
 		['default_endpoint_module', 
-			qq{Default endpoint-handler Perl module.
+			qq{
+Default endpoint-handler Perl module.
 This will be used for URI's that have not been configured via 'pepper set-endpoint'.
+Exapme:  PepperApps::NiceEndPoint. Built under $self->{pepper_directory}/lib.
 Leave blank for example module.}],
 	];
 	
