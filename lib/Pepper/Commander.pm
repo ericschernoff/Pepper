@@ -557,7 +557,7 @@ sub prompt_user {
 		# Y or N means Y or N
 		if ($$prompt_set[0] =~ /Y or N/) {
 			$$results{$prompt_key} = uc( $$results{$prompt_key} ) ; # might have typed 'y'
-			if ($$results{$prompt_key} !~ /(^(Y|N)$/) { # if not exactly right, use the default or just N
+			if ($$results{$prompt_key} !~ /^(Y|N)$/) { # if not exactly right, use the default or just N
 				$$results{$prompt_key} = $$prompt_set[2] || 'N';
 			}
 		}
