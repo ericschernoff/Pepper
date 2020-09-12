@@ -28,28 +28,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Cpanel::JSON::XS" : "4.08",
-            "DBD::mysql" : "4.050",
-            "DBI" : "1.643",
-            "Date::Format" : "2.24",
-            "Date::Manip::Date" : "6.72",
-            "DateTime" : "1.50",
-            "Encode" : "2.88",
-            "File::RotateLogs" : "0.08",
-            "IO::Prompter" : "0.004015",
-            "Module::Build::Tiny" : "0.035",
-            "Net::Domain" : "3.05",
-            "Path::Tiny" : "0.108",
-            "Plack" : "1.0047",
-            "Plack::Handler::Gazelle" : "0.48",
-            "Plack::Middleware::DBIx::DisconnectAll" : "0.02",
-            "Plack::Middleware::ReverseProxy" : "0.15",
-            "Plack::Middleware::Timeout" : "0.09",
-            "Scalar::Util" : "1.50",
-            "Server::Starter" : "0.33",
-            "Template" : "3.007",
-            "Term::ReadKey" : "2.38",
-            "Try::Tiny" : "0.30"
+            "Module::Build::Tiny" : "0.035"
          }
       },
       "develop" : {
@@ -63,6 +42,27 @@
       },
       "runtime" : {
          "requires" : {
+            "Cpanel::JSON::XS" : "4.08",
+            "DBD::mysql" : "4.050",
+            "DBI" : "1.643",
+            "Date::Format" : "2.24",
+            "Date::Manip::Date" : "6.72",
+            "DateTime" : "1.50",
+            "Encode" : "2.88",
+            "File::RotateLogs" : "0.08",
+            "IO::Prompter" : "0.004015",
+            "Net::Domain" : "3.05",
+            "Path::Tiny" : "0.108",
+            "Plack" : "1.0047",
+            "Plack::Handler::Gazelle" : "0.48",
+            "Plack::Middleware::DBIx::DisconnectAll" : "0.02",
+            "Plack::Middleware::ReverseProxy" : "0.15",
+            "Plack::Middleware::Timeout" : "0.09",
+            "Scalar::Util" : "1.50",
+            "Server::Starter" : "0.33",
+            "Template" : "3.007",
+            "Term::ReadKey" : "2.38",
+            "Try::Tiny" : "0.30",
             "perl" : "5.022001"
          }
       },
@@ -72,7 +72,7 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "unstable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/ericschernoff/Pepper/issues"
@@ -84,9 +84,12 @@
          "web" : "https://github.com/ericschernoff/Pepper"
       }
    },
-   "version" : "1.0.3",
+   "version" : "1.1",
    "x_contributors" : [
+      "Eric Chernoff <eric@pepper.weaverstreet.net>",
       "Eric Chernoff <ericschernoff@gmail.com>",
+      "root <root@majestica-dev.weaverstreet.net>",
+      "root <root@pepper.weaverstreet.net>"
    ],
    "x_serialization_backend" : "JSON::PP version 2.27400_02",
    "x_static_install" : 1
