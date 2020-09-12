@@ -59,9 +59,6 @@ sub pack_psgi_variables {
 
 	# the rest of this is to accept any POST / GET vars
 
-	# space for arrays for fields with multiple values
-	$self->{params}{multi} = {};
-
 	# create a hash of the PSGI params they've sent
 	@vars = $self->{request}->parameters->keys;
 	foreach $v (@vars) {

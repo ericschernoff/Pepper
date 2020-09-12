@@ -204,10 +204,12 @@ sub setup_and_configure {
 			qq{
 Is this a development server? 
 If you select 'Y', errors will be piped to the screen and logged.
-Select 'N' for production servers, where errors will be logged but not shown to the user. (Y or N)},'Y'],
+Select 'N' for production servers, where errors will be logged but not shown to the user. 
+(Y or N)},'Y'],
 		['use_database',qq{
 Auto-Connect to a MySQL/MariaDB database server? 
-This will make the database/SQL methods available via the \$pepper object.(Y or N)},'Y'],
+This will make the database/SQL methods available via the \$pepper object. 
+(Y or N)},'Y'],
 		['database_server', "\n".'Hostname or IP Address for your MySQL/MariaDB server (required)'],
 		['database_username', "\n".'Username to connect to your MySQL/MariaDB server (required)'],
 		['database_password', "\n".'Password to connect to your MySQL/MariaDB server (required)'],

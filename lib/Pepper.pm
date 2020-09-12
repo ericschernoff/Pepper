@@ -220,7 +220,9 @@ as needed.
 =head1 INSTALLATION / GETTTING STARTED
 
 This kit has been tested with Ubuntu 18.04 & 20.04, CentOS 8, and FeeBSD 12.
-B<Installation on Windows is not supported at this time.> 
+B<Installation on Windows is not supported at this time.>  Pepper should work
+on any modern system capable of running Perl 5.22+ and Plack. I will happily add
+any install notes you can provide for other systems (especially WSL or MacOS).
 
 Ubuntu 18/20 users have a quick-start option:
 
