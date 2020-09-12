@@ -2,6 +2,11 @@ Revision history for Perl extension Pepper
 
 {{$NEXT}}
 
+1.1.1 2020-09-12T20:10:28Z
+
+    - Make sure that the Y/N setup prompts only accept 'Y' or 'N'
+    - Tweaks to AUTOLOAD messages
+
 1.1 2020-09-12T03:25:03Z
 
     - The 'pepper' workspace now loads in the user's home directory.
