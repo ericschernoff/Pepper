@@ -144,11 +144,11 @@ sub AUTOLOAD {
 		return $self->{db}->$called_method(@_);
 		
 	# plack handler function?
-	} elsif ($self->{plack_handler}->can($called_method)) {
+	} elsif ($self->{plack_handler} && $self->{plack_handler}->can($called_method)) {
 		return $self->{plack_handler}->$called_method(@_);
 	
 	} else { # hard fail with an error message
-		my $message = "ERROR: No '$called_method' method defined for ".$self->{config}{name}.' objects.';
+		my $message = "ERROR: No '$called_method' method defined for Pepper.";
 		$self->{utils}->send_response( $message, 1 );
 
 	}
