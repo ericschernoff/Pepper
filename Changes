@@ -2,6 +2,10 @@ Revision history for Perl extension Pepper
 
 {{$NEXT}}
 
+1.2.2 2020-09-14T03:50:56Z
+
+    - Remove unnecessary / problematic test for /opt
+
 1.2.1 2020-09-12T20:41:39Z
 
     - Version number change to three-digits to work with PAUSE's version checks.
