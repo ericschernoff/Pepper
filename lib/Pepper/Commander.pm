@@ -284,6 +284,9 @@ Leave blank for example module.}],
 		# set the username for the SystemD service
 		$contents =~ s/User=root/User=$ENV{USER}/;
 		
+		# target directories for PSGI logs
+		$contents =~ s/PEPPER_DIRECTORY/$self->{pepper_directory}/g;
+		
 		# now save it out
 		$utils->filer($dest_file,'write',$contents);
 	}
