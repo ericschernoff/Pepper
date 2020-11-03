@@ -1,6 +1,6 @@
 package Pepper::PlackHandler;
 
-$Pepper::PlackHandler::VERSION = '1.2';
+$Pepper::PlackHandler::VERSION = '1.3';
 
 # for being a good person
 use strict;
