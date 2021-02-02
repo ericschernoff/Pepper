@@ -6,6 +6,8 @@ $Pepper::VERSION = '1.3';
 use DBI; # tim bounce, where would the world be without you? nowhere.
 use Try::Tiny;
 
+use Pepper::Utilities; # for error-logging
+
 # for checking the status of the DBI reference
 use Scalar::Util qw(blessed);
 
@@ -18,7 +20,6 @@ sub new {
 	my ($class,$args) = @_;
 	# $args should have:
 	#	'config' => the system configuration from Pepper::Utilities,
-	#	'utils' => a Pepper::Utilities object, used for logging in &dbi_error_handler
 
 	my $config = $$args{config};
 
@@ -39,7 +40,6 @@ sub new {
 		'database_server' => $$config{database_server},
 		'current_database' => $$config{connect_to_database},
 		'created' => time(),
-		'utils' => $$args{utils},
 		'connect_time' => 1,
 	}, $class;
 
@@ -137,12 +137,12 @@ sub commit {
 sub dbi_error_handler {
 	 my ( $message, $handle, $first_value ) = @_;
 
-	my $belt = Majestica::Core::UtilityBelt->new();
+	my $utils = Pepper::Utilities->new();
 
 	# log and then send the message
 	my $error_message = 'DBI Error: '.$message;
-	$self->{utils}->logger($error_message, 'database_errors');
-	$self->{utils}->send_response($error_message, 1);
+	$utils->logger($error_message, 'database_errors');
+	$utils->send_response($error_message, 1);
 	
 	# die $error_message;
 	
