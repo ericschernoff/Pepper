@@ -1,6 +1,6 @@
 package Pepper;
 
-$Pepper::VERSION = '1.3';
+$Pepper::VERSION = '1.4';
 
 use Pepper::DB;
 use Pepper::PlackHandler;
