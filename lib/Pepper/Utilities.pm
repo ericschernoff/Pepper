@@ -97,6 +97,7 @@ sub send_response {
 			} elsif ($self->{request}) {
 				
 				$self->send_response($content);
+				
 				if ($self->{db}) { # if we connected to the DB, end our transaction
 					$self->{db}->do_sql('rollback');
 				}
