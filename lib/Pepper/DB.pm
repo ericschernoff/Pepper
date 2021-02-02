@@ -142,9 +142,8 @@ sub dbi_error_handler {
 	# log and then send the message
 	my $error_message = 'DBI Error: '.$message;
 	$utils->logger($error_message, 'database_errors');
-	$utils->send_response($error_message, 1);
 	
-	# die $error_message;
+	die $error_message;
 	
 	return 1;
 }
