@@ -84,7 +84,7 @@ sub execute_handler {
 	}
 	
 	# ship the content to the client
-	$self->send_response($response_content);
+	$self->send_response($response_content) if $response_content;
 
 }
 
