@@ -89,6 +89,7 @@ sub pack_psgi_variables {
 	# maybe they sent the auth_token as a PSGI param?
 	$self->{auth_token} ||= $self->{params}{auth_token};
 	
+	return 1;
 }
 
 # utility to set a cookie
@@ -111,6 +112,8 @@ sub set_cookie {
 		path => '/',
 		expires => time() + ($$cookie_details{days_to_live} * 86400)
 	};	
+	
+	return 1;
 }
 
 1;

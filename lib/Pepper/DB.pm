@@ -86,6 +86,7 @@ sub connect_to_database {
 	$self->{connect_time} = time();
 	
 	# $self->{dbh} is now ready to go
+	return 1;
 }
 
 # method to change the current working database for a connection
@@ -107,7 +108,8 @@ sub change_database {
 
 	# pretty easy
 	$self->{dbh}->do(qq{use $database_name});
-
+	
+	return 1;
 }
 
 
@@ -121,7 +123,7 @@ sub comma_list_select {
 
 	# nothing found?  just return
 	if (!$$results[0]) {
-		return;
+		return '';
 	} else { # otherwise, return our comma-separated version of this
 		return join(',',@$results);
 	}
@@ -131,6 +133,7 @@ sub comma_list_select {
 sub commit {
 	my $self = shift;
 	$self->do_sql('commit');
+	return 1;
 }
 
 # subroutine to use the Pepper::Utilities's logging and return functions to capture errors and return a proper message
@@ -214,6 +217,8 @@ sub do_sql {
 
 	# any finally, clean (will only still be here for insert, replace, or update statements)
 	$sth->finish;
+	
+	return 1;
 }
 
 
@@ -343,6 +348,7 @@ sub DESTROY {
 	$self->do_sql('rollback');
 	my $rc = $self->{dbh}->disconnect;
 	
+	return 1;	
 }
 
 # all done

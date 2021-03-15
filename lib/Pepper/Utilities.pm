@@ -151,9 +151,12 @@ sub send_response {
 			$self->{response}->header('Content-Disposition' => 'attachment; filename="'.$content_filename.'"');
 		}
 		$self->{response}->body($content);
+
+		return 1;
 		
 	} else { # print to stdout
 		print $content;
+		return 1;
 	}
 
 	if ($stop_here == 1) { # if they want us to stop here, do so; we should be in an eval{} loop to catch this
@@ -217,6 +220,7 @@ sub template_process {
 
 		# the '2' tells mr_zebra to avoid logging an error
 		$self->send_response($output,2);
+		return 1;
 
 	} elsif ($$args{save_file}) { # save to the filesystem
 		$self->filer( $$args{save_file}, 'write', $output);
@@ -377,6 +381,7 @@ sub filer {
 	} elsif ($operation eq 'write') {
 
 		path($file_location)->spew_raw( $content );
+		return 1;
 
 	} elsif ($operation eq 'append') {
 
@@ -384,6 +389,7 @@ sub filer {
 		$content .= "\n" if $content !~ /\n$/;
 
 		path($file_location)->append_raw( $content );
+		return 1;
 
 	} elsif ($operation eq 'basename') {
 
@@ -458,7 +464,7 @@ sub read_json_file {
 sub write_json_file {
 	my ($self, $json_file_path, $data_structure) = @_;
 	
-	return if !$json_file_path || ref($data_structure) !~ /ARRAY|HASH/;
+	return 1 if !$json_file_path || ref($data_structure) !~ /ARRAY|HASH/;
 	
 	# writing one liners like this does not make me feel beautiful	
 	$self->filer($json_file_path, 'write', $self->json_from_perl($data_structure) );
@@ -617,6 +623,8 @@ sub read_system_configuration {
 		$self->send_response('ERROR: Could not read in system configuration file: '.$@,1);
 	}
 
+	return 1;
+	
 }
 
 # save a system config file
@@ -633,6 +641,9 @@ sub write_system_configuration {
 
 	# set the permissions
 	chmod 0600,  $self->{config_file} ;	
+
+	return 1;
+
 }
 
 # method to update the endpoint mapping configs via 'pepper set-endpoint'
@@ -693,6 +704,8 @@ sub set_endpoint_mapping {
 		$self->write_json_file( $self->{config}{url_mappings_file}, $url_mappings );
 		
 	}
+
+	return 1;
 	
 }
 
@@ -723,6 +736,8 @@ sub delete_endpoint_mapping {
 		$self->write_json_file( $self->{config}{url_mappings_file}, $url_mappings );
 
 	}
+
+	return 1;
 
 }
 

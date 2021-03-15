@@ -71,7 +71,8 @@ sub run {
 		$self->$method(@args);
 	
 	}
-		
+	
+	return 1;	
 }
 
 # print documentation on how to use this
@@ -133,6 +134,7 @@ Restarts the Plack service and put your code changes into effect.
 
 };
 
+	return 1;
 }
 
 # test that the database connection works; hard to do this in module install
@@ -179,6 +181,8 @@ sub test_db {
 	if ($mode eq 'setup' && $result_message =~ /ERROR/) {
 		exit;
 	}
+	
+	return 1;
 
 }
 
@@ -305,7 +309,8 @@ Leave blank for example module.}],
 	}
 
 	print "\nConfiguration complete and workspace ready under $self->{pepper_directory}\n";
-
+	
+	return 1;
 }
 
 # method to add an endpoint mapping to the system
@@ -384,6 +389,7 @@ sub set_endpoint {
 	# all done
 	print "\nEndpoint configured for $$endpoint_data{endpoint_uri}\n".$extra_text;
 	
+	return 1;
 }
 
 # method to remove an endpoint mapping from the system
@@ -426,6 +432,7 @@ sub delete_endpoint {
 	# all done
 	print "\nDeleted endpoint for $$endpoint_data{endpoint_uri}\n";
 	
+	return 1;
 }
 
 
@@ -477,7 +484,7 @@ sub list_endpoints {
 	}
 	print "\n";
 
-	return;
+	return 1;
 }
 
 # method to test an endpoint
@@ -513,6 +520,7 @@ sub test_endpoint {
 		print "Error: Endpoint returns 500 Internal Server Error.  Check fatal log under $self->{pepper_directory}/log\n";
 	}
 
+	return 1;
 }
 
 # method to intercept prompts
@@ -597,7 +605,8 @@ sub plack_controller {
 		system(qq{kill -HUP `cat $pid_file`});
 		
 	}
-
+	
+	return 1;
 }
 
 1;

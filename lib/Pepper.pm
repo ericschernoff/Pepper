@@ -86,6 +86,9 @@ sub execute_handler {
 	# ship the content to the client
 	$self->send_response($response_content) if $response_content;
 
+	# success
+	return 1;
+
 }
 
 # method to determine the handler for this URI / endpoint from the configuration
@@ -123,6 +126,7 @@ sub determine_endpoint_module {
 	# otherwise, we have an error
 	} else {
 		$self->send_response('Error: No handler defined for this endpoint.',1);
+		return 0;
 	}
 }
 
@@ -149,7 +153,7 @@ sub AUTOLOAD {
 	} else { # hard fail with an error message
 		my $message = "ERROR: No '$called_method' method defined for Pepper.";
 		$self->{utils}->send_response( $message, 1 );
-
+		return 0;
 	}
 	
 }
